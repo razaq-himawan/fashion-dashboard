@@ -16,8 +16,6 @@ const authRouter = require("./routes/auth");
 const dashboardRouter = require("./routes/dashboard");
 const User = require("./models/user");
 
-require("./database/db");
-
 const app = express();
 
 (async () => {
@@ -80,5 +78,7 @@ app.use((err, req, res, next) => {
 });
 
 app.listen(process.env.PORT, () => {
-  console.log(`Example app listening on port ${process.env.PORT}`);
+  console.log(
+    `Example app listening on port http://localhost:${process.env.PORT}`
+  );
 });
