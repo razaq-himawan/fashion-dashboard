@@ -1,27 +1,14 @@
 <header>
-  <nav class="navbar navbar-expand-lg bg-body-tertiary">
-    <div class="container-fluid mx-4">
-      <a
-        class="navbar-brand"
-        href="/"
-      >
-        <img
-          src="/docs/5.3/assets/brand/bootstrap-logo.svg"
-          alt="Logo"
-          width="30"
-          height="24"
-          class="d-inline-block align-text-top"
-        />
-        NamaToko
-      </a>
-      <% if (currentPath != "/login") { %>
-      <a
-        class="btn btn-primary"
-        href="/login"
-      >
-        Login
-      </a>
-      <% } %>
+  <div class="shadow-sm">
+    <div class="flex items-center justify-between mx-10 py-4">
+      <h1 class="text-base font-bold">Nama Toko</h1>
+
+      <ul class="flex justify-between">
+        <!-- user need auth -->
+        <li><a href="/dashboard">Dashboard</a></li>
+        <div class="divider divider-horizontal"></div>
+        <li><a href="/login">Login</a></li>
+      </ul>
     </div>
-  </nav>
+  </div>
 </header>

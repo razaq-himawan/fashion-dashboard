@@ -1,6 +1,165 @@
 <% layout('layouts/app') %>
 
-<h1>Welcome</h1>
+<h2 class="text-3xl text-center my-3">Stats</h2>
 
-<h2>Jumlah Aset (card per kategori)</h2>
-<h2>Transaksi dan nota (table dengan button untuk membuka nota)</h2>
+<div class="grid grid-cols-3 place-items-center gap-4">
+  <div class="card w-72 bg-base-200 card-sm shadow-sm">
+    <div class="card-body">
+      <h3 class="card-title">Baju</h3>
+      <p class="text-3xl font-bold">100</p>
+    </div>
+    <div class="absolute top-1 right-4">
+      <img
+        src="/img/baju.png"
+        alt="baju"
+        class="w-14 h-14"
+      />
+    </div>
+  </div>
+
+  <div class="card w-72 bg-base-200 card-sm shadow-sm">
+    <div class="card-body">
+      <h3 class="card-title">Celana</h3>
+      <p class="text-3xl font-bold">100</p>
+    </div>
+    <div class="absolute top-1 right-4">
+      <img
+        src="/img/celana.png"
+        alt="celana"
+        class="w-14 h-14"
+      />
+    </div>
+  </div>
+
+  <div class="card w-72 bg-base-200 card-sm shadow-sm">
+    <div class="card-body">
+      <h3 class="card-title">Tas</h3>
+      <p class="text-3xl font-bold">100</p>
+    </div>
+    <div class="absolute top-1 right-4">
+      <img
+        src="/img/tas.png"
+        alt="tas"
+        class="w-14 h-14"
+      />
+    </div>
+  </div>
+
+  <div class="card w-72 bg-base-200 card-sm shadow-sm">
+    <div class="card-body">
+      <h3 class="card-title">Jam</h3>
+      <p class="text-3xl font-bold">100</p>
+    </div>
+    <div class="absolute top-1 right-4">
+      <img
+        src="/img/jam.png"
+        alt="jam"
+        class="w-14 h-14"
+      />
+    </div>
+  </div>
+
+  <div class="card w-72 bg-base-200 card-sm shadow-sm relative">
+    <div class="card-body">
+      <h3 class="card-title">Kacamata</h3>
+      <p class="text-3xl font-bold">100</p>
+    </div>
+    <div class="absolute top-1 right-4">
+      <img
+        src="/img/kacamata.png"
+        alt="kacamata"
+        class="w-14 h-14"
+      />
+    </div>
+  </div>
+
+  <div class="card w-72 bg-base-200 card-sm shadow-sm">
+    <div class="card-body">
+      <h3 class="card-title">Perhiasan</h3>
+      <p class="text-3xl font-bold">100</p>
+    </div>
+    <div class="absolute top-1 right-4">
+      <img
+        src="/img/perhiasan.png"
+        alt="perhiasan"
+        class="w-14 h-14"
+      />
+    </div>
+  </div>
+
+  <div class="card w-72 bg-base-200 card-sm shadow-sm">
+    <div class="card-body">
+      <h3 class="card-title">Sepatu</h3>
+      <p class="text-3xl font-bold">100</p>
+    </div>
+    <div class="absolute top-1 right-4">
+      <img
+        src="/img/sepatu.png"
+        alt="sepatu"
+        class="w-14 h-14"
+      />
+    </div>
+  </div>
+
+  <div class="card w-72 bg-base-200 card-sm shadow-sm">
+    <div class="card-body">
+      <h3 class="card-title">Jaket</h3>
+      <p class="text-3xl font-bold">100</p>
+    </div>
+    <div class="absolute top-1 right-4">
+      <img
+        src="/img/jaket.png"
+        alt="jaket"
+        class="w-14 h-14"
+      />
+    </div>
+  </div>
+
+  <div class="card w-72 bg-base-200 card-sm shadow-sm">
+    <div class="card-body">
+      <h3 class="card-title">Topi</h3>
+      <p class="text-3xl font-bold">100</p>
+    </div>
+    <div class="absolute top-1 right-4">
+      <img
+        src="/img/topi.png"
+        alt="topi"
+        class="w-14 h-14"
+      />
+    </div>
+  </div>
+</div>
+<div
+  class="overflow-x-auto rounded-lg border border-base-content/5 bg-base-100 mx-80"
+>
+  <table class="table">
+    <!-- head -->
+    <thead>
+      <tr>
+        <th>Id</th>
+        <th>Tanggal</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- row 1 -->
+      <tr>
+        <td>001</td>
+        <td>Quality Control</td>
+        <td>Blue</td>
+      </tr>
+      <!-- row 2 -->
+      <tr>
+        <td>002</td>
+        <td>Desktop Support</td>
+        <td>Purple</td>
+      </tr>
+      <!-- row 3 -->
+      <tr>
+        <td>003</td>
+        <td>Brice Swyre</td>
+        <td>Tax Accountant</td>
+      </tr>
+    </tbody>
+  </table>
+</div>

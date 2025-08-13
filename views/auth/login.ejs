@@ -1,60 +1,94 @@
-<% layout('layouts/app') %>
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0"
+    />
 
-<h1 class="text-center">Login</h1>
-<div class="col-6 offset-3">
-  <% if (error && error.length > 0) { %>
-  <div class="alert alert-danger"><%= error[0] %></div>
-  <% } %>
+    <link
+      rel="stylesheet"
+      href="/css/style.css"
+    />
 
-  <form
-    action="/login"
-    method="POST"
-    class="validated-form"
-    novalidate
-  >
-    <div class="mb-3">
-      <label
-        for="username"
-        class="form-label"
-      >
-        Username
-      </label>
-      <input
-        type="text"
-        name="username"
-        id="username"
-        class="form-control"
-        required
-      />
+    <title>Dashboard</title>
+  </head>
+  <body class="flex justify-center items-center min-h-screen">
+    <div class="w-fit card card-xl shadow-md p-8 bg-base-200">
+      <h1 class="text-center text-3xl font-bold mb-6">Login</h1>
+      <div class="max-w-md mx-auto">
+        <% if (error && error.length > 0) { %>
+        <div class="alert alert-error shadow-lg mb-4">
+          <div class="flex items-center gap-2">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="stroke-current flex-shrink-0 h-6 w-6"
+              fill="none"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M12 9v2m0 4h.01M4.93 4.93a10 10 0 0114.14 0 10 10 0 010 14.14 10 10 0 01-14.14 0 10 10 0 010-14.14z"
+              />
+            </svg>
+            <span><%= error[0] %></span>
+          </div>
+        </div>
+        <% } %>
 
-      <div class="valid-feedback">Looks good!</div>
-      <div class="invalid-feedback">Fill out this field!</div>
+        <form
+          action="/login"
+          method="POST"
+          class="space-y-4"
+          novalidate
+        >
+          <div class="space-y-1">
+            <label
+              for="username"
+              class="label"
+            >
+              <span class="label-text">Username</span>
+            </label>
+            <input
+              type="text"
+              name="username"
+              id="username"
+              placeholder="Enter your username"
+              class="input input-bordered w-full"
+              required
+            />
+          </div>
+
+          <div class="space-y-1">
+            <label
+              for="password"
+              class="label"
+            >
+              <span class="label-text">Password</span>
+            </label>
+            <input
+              type="password"
+              name="password"
+              id="password"
+              placeholder="Enter your password"
+              class="input input-bordered w-full"
+              required
+            />
+          </div>
+
+          <div class="mt-6">
+            <button
+              type="submit"
+              class="btn btn-success w-full"
+            >
+              Login
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
-
-    <div class="mb-3">
-      <label
-        for="password"
-        class="form-label"
-      >
-        Password
-      </label>
-      <input
-        type="password"
-        name="password"
-        id="password"
-        class="form-control"
-        required
-      />
-
-      <div class="valid-feedback">Looks good!</div>
-      <div class="invalid-feedback">Fill out this field!</div>
-    </div>
-
-    <button
-      type="submit"
-      class="btn btn-success"
-    >
-      Login
-    </button>
-  </form>
-</div>
+  </body>
+</html>
