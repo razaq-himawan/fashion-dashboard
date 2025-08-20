@@ -17,4 +17,6 @@ router.route("/products/sizes").get(dashboardController.sizes);
 
 router.route("/users").get(dashboardController.users);
 
+router.route("/orders").get(dashboardController.orders);
+
 module.exports = router;

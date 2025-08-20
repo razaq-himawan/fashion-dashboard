@@ -2,7 +2,6 @@
 
 <div class="space-y-15">
   <div class="flex gap-2 justify-end">
-    <button class="btn">Filter+</button>
     <label class="input">
       <svg
         class="h-[1em] opacity-50"
@@ -40,28 +39,18 @@
       <thead>
         <tr>
           <th>Id</th>
-          <th>Nama</th>
-          <th>Brand</th>
-          <th>Kategori</th>
-          <th>Warna</th>
-          <th>Ukuran</th>
-          <th>Harga</th>
-          <th>Total Stok</th>
-          <th>Actions</th>
+          <th>Tanggal</th>
+          <th>Status</th>
         </tr>
       </thead>
       <tbody>
         <!-- row 1 -->
-        <% for (let i = 0; i < 10; i++) { %>
+        <% for (let i = 0; i < 5; i++) { %>
         <tr>
           <td><%= i %></td>
-          <td>---</td>
+          <td>001</td>
           <td>Nike</td>
-          <td>Pria</td>
-          <td>Blue</td>
-          <td></td>
-          <td></td>
-          <td></td>
+          <td>Lunas</td>
           <td>
             <svg
               xmlns="http://www.w3.org/2000/svg"

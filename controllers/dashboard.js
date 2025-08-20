@@ -26,6 +26,10 @@ function users(req, res) {
   res.render("dashboard/users");
 }
 
+function orders(req, res) {
+  res.render("dashboard/orders");
+}
+
 module.exports = {
   overview,
   products,
@@ -34,4 +38,5 @@ module.exports = {
   colors,
   sizes,
   users,
+  orders,
 };

@@ -6,18 +6,45 @@
       name="viewport"
       content="width=device-width, initial-scale=1.0"
     />
-
+    <link
+      rel="icon"
+      type="image/x-icon"
+      href="/img/favicon.ico"
+    />
     <link
       rel="stylesheet"
       href="/css/style.css"
     />
     <title>Dashboard</title>
   </head>
-  <body class="min-h-screen flex">
+  <body class="min-h-screen bg-base-100">
     <!-- Sidebar -->
     <%- include("partial/sidebar") %>
 
     <!-- Main content -->
-    <main class="flex-1 p-6 bg-base-100"><%- body %></main>
+    <main
+      id="content"
+      class="transition-all duration-300 ml-64 p-6"
+    >
+      <%- include("partial/dashboardHeader") %>
+      <div><%- body %></div>
+    </main>
+
+    <script>
+      const sidebar = document.getElementById("sidebar");
+      const closeBtn = document.getElementById("closeSidebar");
+      const openBtn = document.getElementById("openSidebar");
+      const content = document.getElementById("content");
+
+      closeBtn.addEventListener("click", () => {
+        sidebar.classList.add("-translate-x-full");
+        content.classList.remove("ml-64");
+      });
+
+      openBtn.addEventListener("click", () => {
+        sidebar.classList.remove("-translate-x-full");
+        content.classList.add("ml-64");
+      });
+    </script>
   </body>
 </html>

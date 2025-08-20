@@ -1,5 +1,44 @@
-<aside class="w-64 bg-base-200 min-h-screen p-4">
-  <h2 class="text-xl font-bold mb-4">Dashboard</h2>
+<aside
+  id="sidebar"
+  class="fixed top-0 left-0 w-64 bg-base-200 min-h-screen p-4 transition-transform duration-300"
+>
+  <div class="flex items-center justify-between">
+    <div class="flex gap-2">
+      <div class="avatar">
+        <div class="w-8 rounded-full">
+          <img src="/img/logo.png" />
+        </div>
+      </div>
+      <h2 class="text-xl">Style House</h2>
+    </div>
+    <button
+      id="closeSidebar"
+      class="btn p-1 min-h-0 h-auto"
+    >
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        class="lucide lucide-panel-left-close-icon lucide-panel-left-close"
+      >
+        <rect
+          width="18"
+          height="18"
+          x="3"
+          y="3"
+          rx="2"
+        />
+        <path d="M9 3v18" />
+        <path d="m16 15-3-3 3-3" />
+      </svg>
+    </button>
+  </div>
   <ul class="menu text-base-content">
     <li><a href="/dashboard">🏠 Home</a></li>
     <li><a href="/reports">📊 Reports</a></li>
