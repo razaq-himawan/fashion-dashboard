@@ -4,4 +4,13 @@ function loginForm(req, res) {
   res.render("auth/login", { currentPath: req.path });
 }
 
-module.exports = { loginForm };
+function logout(req, res) {
+  req.logOut((err) => {
+    if (err) return next(err);
+
+    req.flash("success_msg", "You are logged out");
+    res.redirect("/");
+  });
+}
+
+module.exports = { loginForm, logout };

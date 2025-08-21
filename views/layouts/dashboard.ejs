@@ -20,33 +20,27 @@
     />
     <title>Dashboard</title>
   </head>
-  <body class="min-h-screen bg-base-100">
+  <body class="min-h-screen bg-base-200">
     <!-- Sidebar -->
     <%- include("partial/sidebar") %>
 
     <!-- Main content -->
     <main
       id="content"
-      class="transition-all duration-300 ml-64 p-6"
+      class="transition-all duration-300 ml-64"
     >
       <%- include("partial/dashboardHeader") %>
-      <div><%- body %></div>
+      <div class="p-6"><%- body %></div>
     </main>
 
     <script>
       const sidebar = document.getElementById("sidebar");
-      const closeBtn = document.getElementById("closeSidebar");
-      const openBtn = document.getElementById("openSidebar");
+      const toggleBtn = document.getElementById("toggleSidebarBtn");
       const content = document.getElementById("content");
 
-      closeBtn.addEventListener("click", () => {
-        sidebar.classList.add("-translate-x-full");
-        content.classList.remove("ml-64");
-      });
-
-      openBtn.addEventListener("click", () => {
-        sidebar.classList.remove("-translate-x-full");
-        content.classList.add("ml-64");
+      toggleBtn.addEventListener("click", () => {
+        sidebar.classList.toggle("-translate-x-full");
+        content.classList.toggle("ml-64");
       });
     </script>
   </body>

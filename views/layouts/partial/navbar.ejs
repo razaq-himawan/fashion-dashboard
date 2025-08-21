@@ -13,16 +13,18 @@
         <h1 class="text-xl">Style House</h1>
       </a>
 
-      <ul class="flex items-center">
-        <!-- user need auth -->
-        <li>
+      <div class="flex items-center">
+        <% if (currentUser) { %>
+        <div>
           <a
             class="btn px-1 py-1.5 min-h-0 h-auto mr-2"
             href="/dashboard"
             >Dashboard</a
           >
-        </li>
-        <li>
+        </div>
+        <% } %>
+
+        <div>
           <button class="btn p-1 min-h-0 h-auto">
             <label class="swap swap-rotate">
               <!-- this hidden checkbox controls the state -->
@@ -55,16 +57,38 @@
               </svg>
             </label>
           </button>
-        </li>
+        </div>
+
         <div class="divider divider-horizontal !h-4 my-auto"></div>
-        <li>
+
+        <% if (!currentUser) { %>
+        <div>
           <a
             class="btn btn-primary py-1 px-1.5 min-h-0 h-auto text-primary-content"
             href="/login"
             >Login</a
           >
-        </li>
-      </ul>
+        </div>
+        <% } else { %>
+        <div>
+          <button
+            class="btn btn-outline py-1 px-1.5 min-h-0 h-auto"
+            onclick="
+              event.preventDefault()
+              document.querySelector('#logout-form').submit()
+            "
+          >
+            Logout
+          </button>
+          <form
+            action="/logout"
+            method="POST"
+            id="logout-form"
+            style="display: none"
+          ></form>
+        </div>
+        <% } %>
+      </div>
     </div>
   </div>
 </header>

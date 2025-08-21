@@ -17,6 +17,6 @@ router
     })
   );
 
-// TODO: register, logout
+router.post("/logout", AuthController.logout);
 
 module.exports = router;

@@ -1,9 +1,11 @@
 const express = require("express");
 const dashboardController = require("../controllers/dashboard");
 
+const isAuth = require("../middlewares/isAuth");
+
 const router = express.Router();
 
-router.route("/").get(dashboardController.overview);
+router.route("/").get(isAuth, dashboardController.overview);
 
 router.route("/products").get(dashboardController.products);
 
