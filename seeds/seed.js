@@ -1,7 +1,19 @@
 require("dotenv").config();
-
 const mysql = require("mysql2/promise");
 const bcrypt = require("bcrypt");
+
+const PRODUCT_TYPES = [
+  { name: "Baju", sizes: ["S", "M", "L", "XL"] },
+  { name: "Celana", sizes: ["S", "M", "L", "XL"] },
+  { name: "Sepatu", sizes: ["38", "39", "40", "41"] },
+  { name: "Tas", sizes: ["Free Size"] },
+  { name: "Jam", sizes: ["38mm", "40mm", "42mm"] },
+  { name: "Kacamata", sizes: ["Free Size"] },
+  { name: "Perhiasan", sizes: ["15mm", "16mm", "17mm"] },
+  { name: "Tumbler", sizes: ["500ml", "1L"] },
+  { name: "Jaket", sizes: ["S", "M", "L", "XL"] },
+  { name: "Topi", sizes: ["Free Size"] },
+];
 
 async function seedDatabase() {
   const connection = await mysql.createConnection({
@@ -15,10 +27,10 @@ async function seedDatabase() {
 
   try {
     await connection.query(
-      `DROP TABLE IF EXISTS products, users, brands, categories, colors, sizes`
+      `DROP TABLE IF EXISTS products, users, brands, categories, colors, sizes, product_type_sizes, product_types`
     );
 
-    // Create tables
+    // Users
     await connection.query(`
       CREATE TABLE users (
         id INT AUTO_INCREMENT PRIMARY KEY,
@@ -31,6 +43,7 @@ async function seedDatabase() {
       );
     `);
 
+    // Reference tables
     const refTables = ["brands", "categories", "colors", "sizes"];
     for (const table of refTables) {
       await connection.query(`
@@ -43,18 +56,44 @@ async function seedDatabase() {
       `);
     }
 
+    // Product types
+    await connection.query(`
+      CREATE TABLE product_types (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        nama VARCHAR(255) UNIQUE NOT NULL,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+      );
+    `);
+
+    await connection.query(`
+      CREATE TABLE product_type_sizes (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        product_type_id INT NOT NULL,
+        size_id INT NOT NULL,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        FOREIGN KEY (product_type_id) REFERENCES product_types(id),
+        FOREIGN KEY (size_id) REFERENCES sizes(id)
+      );
+    `);
+
+    // Products
     await connection.query(`
       CREATE TABLE products (
         id INT AUTO_INCREMENT PRIMARY KEY,
         product_code VARCHAR(50) UNIQUE,
         nama TEXT NOT NULL,
+        product_type_id INT,
         brand_id INT,
         category_id INT,
         color_id INT,
         size_id INT,
         harga DECIMAL(10,2) NOT NULL,
+        stock INT NOT NULL DEFAULT 0,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        FOREIGN KEY (product_type_id) REFERENCES product_types(id),
         FOREIGN KEY (brand_id) REFERENCES brands(id),
         FOREIGN KEY (category_id) REFERENCES categories(id),
         FOREIGN KEY (color_id) REFERENCES colors(id),
@@ -62,36 +101,14 @@ async function seedDatabase() {
       );
     `);
 
-    // Seed reference tables
+    // Seed data
     const insertValues = async (table, values) => {
       for (const val of values) {
         await connection.query(`INSERT INTO ${table} (nama) VALUES (?)`, [val]);
       }
     };
 
-    await insertValues("brands", [
-      "Adidas",
-      "Gucci",
-      "H&M",
-      "Nike",
-      "Zara",
-      "Rolex",
-      "Casio",
-      "Daniel Wellington",
-      "Levi's",
-      "Uniqlo",
-      "Ray-Ban",
-      "Oakley",
-      "Fossil",
-      "Swatch",
-      "The North Face",
-      "Under Armour",
-      "Reebok",
-      "Puma",
-      "Hermès",
-      "Supreme",
-    ]);
-
+    await insertValues("brands", ["Adidas", "Gucci", "H&M", "Nike", "Zara"]);
     await insertValues("categories", ["Pria", "Wanita", "Anak-anak"]);
     await insertValues("colors", [
       "Biru",
@@ -121,19 +138,37 @@ async function seedDatabase() {
       "1L",
     ]);
 
-    // Hash passwords with bcrypt
-    const saltRounds = 10;
-    const user = {
-      username: "admin",
-      email: "admin@example.com",
-      password: "admin123",
-      role: "owner",
-    };
+    // Map sizes by name
+    const [sizes] = await connection.query("SELECT * FROM sizes");
+    const sizeMap = {};
+    for (const size of sizes) {
+      sizeMap[size.nama] = size.id;
+    }
 
-    const hashedPassword = await bcrypt.hash(user.password, saltRounds);
+    // Insert product types & product_type_sizes
+    for (const type of PRODUCT_TYPES) {
+      const [res] = await connection.query(
+        "INSERT INTO product_types (nama) VALUES (?)",
+        [type.name]
+      );
+      const productTypeId = res.insertId;
+
+      for (const sizeName of type.sizes) {
+        const sizeId = sizeMap[sizeName];
+        if (sizeId) {
+          await connection.query(
+            "INSERT INTO product_type_sizes (product_type_id, size_id) VALUES (?, ?)",
+            [productTypeId, sizeId]
+          );
+        }
+      }
+    }
+
+    const saltRounds = 10;
+    const hashedPassword = await bcrypt.hash("admin123", saltRounds);
     await connection.query(
       `INSERT INTO users (username, email, password_hash, role) VALUES (?, ?, ?, ?)`,
-      [user.username, user.email, hashedPassword, user.role]
+      ["admin", "admin@example.com", hashedPassword, "owner"]
     );
 
     console.log("✅ Database seeded successfully.");

@@ -16,6 +16,8 @@ const authRouter = require("./routes/auth");
 const dashboardRouter = require("./routes/dashboard");
 const User = require("./models/user");
 
+const PRODUCT_TYPES = require("./utils/types/pruduct");
+
 const app = express();
 
 (async () => {
@@ -61,7 +63,7 @@ app.use((req, res, next) => {
 });
 
 app.get("/", (req, res) => {
-  res.render("home", { currentPath: req.path });
+  res.render("home", { currentPath: req.path, productTypes: PRODUCT_TYPES });
 });
 
 app.use("/", authRouter);

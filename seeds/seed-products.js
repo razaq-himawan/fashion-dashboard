@@ -1,38 +1,15 @@
 require("dotenv").config();
 const mysql = require("mysql2/promise");
 
-const PRODUCT_TYPES = [
-  "Baju",
-  "Celana",
-  "Sepatu",
-  "Tas",
-  "Jam",
-  "Kacamata",
-  "Perhiasan",
-  "Tumbler",
-  "Jaket",
-  "Topi",
-];
-
-// Produk yang memiliki ukuran
-const SIZE_MAP = {
-  Baju: ["S", "M", "L", "XL"],
-  Celana: ["S", "M", "L", "XL"],
-  Jaket: ["S", "M", "L", "XL"],
-  Sepatu: ["38", "39", "40", "41"],
-  Jam: ["38mm", "40mm", "42mm"],
-  Perhiasan: ["15mm", "16mm", "17mm"],
-  Tumbler: ["500ml", "1L"],
-  Tas: ["Free Size"],
-  Topi: ["Free Size"],
-  Kacamata: ["Free Size"],
-};
-
 function getRandomElement(arr) {
   return arr[Math.floor(Math.random() * arr.length)];
 }
 
 function getRandomPrice(min = 50000, max = 1000000) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function getRandomStock(min = 5, max = 100) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
@@ -58,52 +35,70 @@ async function seedProducts() {
   const brands = await getIds("brands");
   const categories = await getIds("categories");
   const colors = await getIds("colors");
-  const sizes = await getIds("sizes");
 
-  const sizeMapByName = {};
-  for (const size of sizes) {
-    sizeMapByName[size.nama] = size.id;
+  // Get product types
+  const [productTypes] = await connection.query(
+    "SELECT id, nama FROM product_types"
+  );
+
+  // Get mapping product_type → allowed sizes
+  const [ptsRows] = await connection.query(`
+    SELECT pts.product_type_id, s.id AS size_id, s.nama AS size_name
+    FROM product_type_sizes pts
+    JOIN sizes s ON pts.size_id = s.id
+  `);
+
+  const productTypeSizeMap = {};
+  for (const row of ptsRows) {
+    if (!productTypeSizeMap[row.product_type_id]) {
+      productTypeSizeMap[row.product_type_id] = [];
+    }
+    productTypeSizeMap[row.product_type_id].push({
+      id: row.size_id,
+      name: row.size_name,
+    });
   }
 
   const products = [];
 
   for (let i = 1; i <= 60; i++) {
-    const productType = getRandomElement(PRODUCT_TYPES);
+    const productType = getRandomElement(productTypes);
     const brand = getRandomElement(brands);
     const category = getRandomElement(categories);
     const color = getRandomElement(colors);
 
     let sizeId = null;
-    if (SIZE_MAP[productType]) {
-      const allowedSizes = SIZE_MAP[productType];
-      const randomSizeName = getRandomElement(allowedSizes);
-      sizeId = sizeMapByName[randomSizeName] || null;
+    let sizeName = "";
+    if (productTypeSizeMap[productType.id]) {
+      const randomSize = getRandomElement(productTypeSizeMap[productType.id]);
+      sizeId = randomSize.id;
+      sizeName = randomSize.name;
     }
 
     const name =
-      `${productType} ${brand.nama} ${color.nama}` +
-      (sizeId
-        ? ` ${Object.keys(sizeMapByName).find(
-            (k) => sizeMapByName[k] === sizeId
-          )}`
-        : "");
+      `${productType.nama} ${brand.nama} ${color.nama}` +
+      (sizeName ? ` ${sizeName}` : "");
+
     const price = getRandomPrice();
     const productCode = generateProductCode(i);
+    const stock = getRandomStock();
 
     products.push([
       productCode,
       name,
+      productType.id,
       brand.id,
       category.id,
       color.id,
       sizeId,
       price,
+      stock,
     ]);
   }
 
   const insertQuery = `
     INSERT INTO products (
-      product_code, nama, brand_id, category_id, color_id, size_id, harga
+      product_code, nama, product_type_id, brand_id, category_id, color_id, size_id, harga, stock
     ) VALUES ?
   `;
 
