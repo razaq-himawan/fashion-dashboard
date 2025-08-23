@@ -16,7 +16,7 @@ const authRouter = require("./routes/auth");
 const dashboardRouter = require("./routes/dashboard");
 const User = require("./models/user");
 
-const PRODUCT_TYPES = require("./utils/types/pruduct");
+const PRODUCT_TYPES = require("./lib/types/pruduct");
 
 const app = express();
 
