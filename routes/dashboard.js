@@ -3,11 +3,13 @@ const dashboardController = require("../controllers/dashboard");
 
 const isAuth = require("../middlewares/isAuth");
 
+const wrapAsync = require("../utils/wrapAsync");
+
 const router = express.Router();
 
 router.route("/").get(isAuth, dashboardController.overview);
 
-router.route("/products").get(dashboardController.products);
+router.route("/products").get(wrapAsync(dashboardController.products));
 
 router.route("/products/brands").get(dashboardController.brands);
 

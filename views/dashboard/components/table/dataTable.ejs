@@ -1,0 +1,76 @@
+<% 
+/*
+dataTable.ejs
+Params:
+  query: current search term
+  sort: current sort param
+  columns: array of { field, label, sortable }
+  rows: array of objects (your data)
+  model: string (e.g. "products")
+  actions: function(row) => HTML for action buttons
+*/
+%> 
+
+<div class="flex gap-2 justify-end">
+  <form
+    method="GET"
+    class="input flex items-center"
+  >
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      class="lucide lucide-search-icon lucide-search"
+    >
+      <path d="m21 21-4.34-4.34" />
+      <circle
+        cx="11"
+        cy="11"
+        r="8"
+      />
+    </svg>
+    <input
+      type="search"
+      name="q"
+      class="grow"
+      placeholder="Search"
+      value="<%= query %>"
+    />
+  </form>
+</div>
+
+<div
+  class="overflow-x-auto rounded-lg border border-base-content/5 bg-base-100 w-full"
+>
+  <table class="table">
+    <thead>
+      <tr>
+        <% columns.forEach(col => { %>
+        <th>
+          <% if (col.sortable) { %> <%- include('sortableHeader', { field:
+          col.field, label: col.label, query: query, sort: sort }) %> <% } else
+          { %> <%= col.label %> <% } %>
+        </th>
+        <% }) %>
+        <th>Actions</th>
+      </tr>
+    </thead>
+
+    <tbody>
+      <% rows.forEach(row => { %>
+      <tr>
+        <% columns.forEach(col => { %>
+        <td><%= row[col.field] %></td>
+        <% }) %>
+        <td><%- include('rowActions', { model: model, row: row }) %></td>
+      </tr>
+      <% }) %>
+    </tbody>
+  </table>
+</div>

@@ -5,8 +5,10 @@ function getRandomElement(arr) {
   return arr[Math.floor(Math.random() * arr.length)];
 }
 
-function getRandomPrice(min = 50000, max = 1000000) {
-  return Math.floor(Math.random() * (max - min + 1)) + min;
+function getRandomPrice(min = 50000, max = 1000000, step = 1000) {
+  const range = Math.floor((max - min) / step);
+  const randomStep = Math.floor(Math.random() * (range + 1));
+  return min + randomStep * step;
 }
 
 function getRandomStock(min = 5, max = 100) {
@@ -28,7 +30,7 @@ async function seedProducts() {
   console.log("Connected to database. Generating products...");
 
   const getIds = async (table) => {
-    const [rows] = await connection.query(`SELECT id, nama FROM ${table}`);
+    const [rows] = await connection.query(`SELECT id, name FROM ${table}`);
     return rows;
   };
 
@@ -38,12 +40,12 @@ async function seedProducts() {
 
   // Get product types
   const [productTypes] = await connection.query(
-    "SELECT id, nama FROM product_types"
+    "SELECT id, name FROM product_types"
   );
 
   // Get mapping product_type → allowed sizes
   const [ptsRows] = await connection.query(`
-    SELECT pts.product_type_id, s.id AS size_id, s.nama AS size_name
+    SELECT pts.product_type_id, s.id AS size_id, s.name AS size_name
     FROM product_type_sizes pts
     JOIN sizes s ON pts.size_id = s.id
   `);
@@ -76,7 +78,7 @@ async function seedProducts() {
     }
 
     const name =
-      `${productType.nama} ${brand.nama} ${color.nama}` +
+      `${productType.name} ${brand.name} ${color.name}` +
       (sizeName ? ` ${sizeName}` : "");
 
     const price = getRandomPrice();
@@ -98,7 +100,7 @@ async function seedProducts() {
 
   const insertQuery = `
     INSERT INTO products (
-      product_code, nama, product_type_id, brand_id, category_id, color_id, size_id, harga, stock
+      product_code, name, product_type_id, brand_id, category_id, color_id, size_id, price, stock
     ) VALUES ?
   `;
 

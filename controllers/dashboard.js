@@ -1,9 +1,20 @@
+const Product = require("../models/product");
+const formatRupiah = require("../utils/formatRupiah");
+
 function overview(req, res) {
   res.render("dashboard/overview");
 }
 
-function products(req, res) {
-  res.render("dashboard/products");
+async function products(req, res) {
+  const { q, sort } = req.query;
+  const allProducts = await Product.findAll({ q, sort });
+
+  res.render("dashboard/products", {
+    products: allProducts,
+    formatRupiah,
+    query: q || "",
+    sort: sort || "",
+  });
 }
 
 function brands(req, res) {

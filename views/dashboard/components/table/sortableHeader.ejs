@@ -1,0 +1,67 @@
+<% 
+/*
+sortableHeader.ejs
+Params:
+  field: the column's sort key (e.g., "price")
+  label: the column display name (e.g., "Price")
+  query: current search query
+  sort: current sort param
+*/
+%>
+
+<a
+  href="?q=<%= query %>&sort=<%=
+    sort === field + '_asc'
+      ? field + '_desc'
+      : (sort === field + '_desc' ? '' : field + '_asc')
+  %>"
+  class="flex items-center gap-1"
+>
+  <%= label %> <% if (!sort.includes(field)) { %>
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="14"
+    height="14"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="2"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    class="lucide lucide-chevrons-up-down-icon lucide-chevrons-up-down"
+  >
+    <path d="m7 15 5 5 5-5" />
+    <path d="m7 9 5-5 5 5" />
+  </svg>
+  <% } else if (sort === field + '_asc') { %>
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="14"
+    height="14"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="2"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    class="lucide lucide-chevron-up-icon lucide-chevron-up"
+  >
+    <path d="m18 15-6-6-6 6" />
+  </svg>
+  <% } else { %>
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="14"
+    height="14"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="2"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    class="lucide lucide-chevron-down-icon lucide-chevron-down"
+  >
+    <path d="m6 9 6 6 6-6" />
+  </svg>
+  <% } %>
+</a>

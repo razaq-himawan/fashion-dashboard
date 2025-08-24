@@ -1,100 +1,52 @@
-<% layout("layouts/dashboard") %>
-
-<div class="space-y-15">
-  <div class="flex gap-2 justify-end">
-    <button class="btn">Filter+</button>
-    <label class="input">
-      <svg
-        class="h-[1em] opacity-50"
-        xmlns="http://www.w3.org/2000/svg"
-        viewBox="0 0 24 24"
+<% layout("layouts/dashboard") %> <%= %>
+<div class="space-y-10">
+  <div class="space-y-1 flex">
+    <div>
+      <h1 class="text-4xl font-bold">Products</h1>
+      <p class="text-base-content/75">Manage all products</p>
+    </div>
+    <div class="ml-auto">
+      <a
+        href="/dashboard/products/new"
+        class="flex items-center btn btn-primary"
       >
-        <g
-          stroke-linejoin="round"
-          stroke-linecap="round"
-          stroke-width="2.5"
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
           fill="none"
           stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          class="lucide lucide-plus-icon lucide-plus"
         >
-          <circle
-            cx="11"
-            cy="11"
-            r="8"
-          ></circle>
-          <path d="m21 21-4.3-4.3"></path>
-        </g>
-      </svg>
-      <input
-        type="search"
-        class="grow"
-        placeholder="Search"
-      />
-    </label>
+          <path d="M5 12h14" />
+          <path d="M12 5v14" />
+        </svg>
+        <span>Create new</span>
+      </a>
+    </div>
   </div>
 
-  <div
-    class="overflow-x-auto rounded-lg border border-base-content/5 bg-base-100 w-full"
-  >
-    <table class="table">
-      <!-- head -->
-      <thead>
-        <tr>
-          <th>Id</th>
-          <th>Nama</th>
-          <th>Brand</th>
-          <th>Kategori</th>
-          <th>Warna</th>
-          <th>Ukuran</th>
-          <th>Harga</th>
-          <th>Total Stok</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        <!-- row 1 -->
-        <% for (let i = 0; i < 10; i++) { %>
-        <tr>
-          <td><%= i %></td>
-          <td>---</td>
-          <td>Nike</td>
-          <td>Pria</td>
-          <td>Blue</td>
-          <td></td>
-          <td></td>
-          <td></td>
-          <td>
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              class="lucide lucide-ellipsis-icon lucide-ellipsis"
-            >
-              <circle
-                cx="12"
-                cy="12"
-                r="1"
-              />
-              <circle
-                cx="19"
-                cy="12"
-                r="1"
-              />
-              <circle
-                cx="5"
-                cy="12"
-                r="1"
-              />
-            </svg>
-          </td>
-        </tr>
-        <% } %>
-      </tbody>
-    </table>
+  <div class="space-y-4">
+    <%- include('../components/table/dataTable', {
+      model: 'products',
+      query: query,
+      sort: sort,
+      columns: [
+        { field: 'id', label: 'ID', sortable: false },
+        { field: 'name', label: 'Nama', sortable: false },
+        { field: 'brand', label: 'Brand', sortable: false },
+        { field: 'product_type', label: 'Tipe', sortable: false },
+        { field: 'category', label: 'Kategori', sortable: false },
+        { field: 'color', label: 'Warna', sortable: false },
+        { field: 'size', label: 'Ukuran', sortable: false },
+        { field: 'price', label: 'Harga', sortable: true },
+        { field: 'stock', label: 'Stok', sortable: true },
+      ],
+      rows: products
+    }) %>
   </div>
 </div>

@@ -49,7 +49,7 @@ async function seedDatabase() {
       await connection.query(`
         CREATE TABLE ${table} (
           id INT AUTO_INCREMENT PRIMARY KEY,
-          nama VARCHAR(255) UNIQUE NOT NULL,
+          name VARCHAR(255) UNIQUE NOT NULL,
           created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
           updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
         );
@@ -60,7 +60,7 @@ async function seedDatabase() {
     await connection.query(`
       CREATE TABLE product_types (
         id INT AUTO_INCREMENT PRIMARY KEY,
-        nama VARCHAR(255) UNIQUE NOT NULL,
+        name VARCHAR(255) UNIQUE NOT NULL,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
       );
@@ -83,13 +83,13 @@ async function seedDatabase() {
       CREATE TABLE products (
         id INT AUTO_INCREMENT PRIMARY KEY,
         product_code VARCHAR(50) UNIQUE,
-        nama TEXT NOT NULL,
+        name TEXT NOT NULL,
         product_type_id INT,
         brand_id INT,
         category_id INT,
         color_id INT,
         size_id INT,
-        harga DECIMAL(10,2) NOT NULL,
+        price DECIMAL(10,2) NOT NULL,
         stock INT NOT NULL DEFAULT 0,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -104,7 +104,7 @@ async function seedDatabase() {
     // Seed data
     const insertValues = async (table, values) => {
       for (const val of values) {
-        await connection.query(`INSERT INTO ${table} (nama) VALUES (?)`, [val]);
+        await connection.query(`INSERT INTO ${table} (name) VALUES (?)`, [val]);
       }
     };
 
@@ -142,13 +142,13 @@ async function seedDatabase() {
     const [sizes] = await connection.query("SELECT * FROM sizes");
     const sizeMap = {};
     for (const size of sizes) {
-      sizeMap[size.nama] = size.id;
+      sizeMap[size.name] = size.id;
     }
 
     // Insert product types & product_type_sizes
     for (const type of PRODUCT_TYPES) {
       const [res] = await connection.query(
-        "INSERT INTO product_types (nama) VALUES (?)",
+        "INSERT INTO product_types (name) VALUES (?)",
         [type.name]
       );
       const productTypeId = res.insertId;
