@@ -1,54 +1,46 @@
 <% layout("layouts/dashboard") %>
 
-<div
-  class="overflow-x-auto rounded-lg border border-base-content/5 bg-base-100 w-full"
->
-  <table class="table">
-    <!-- head -->
-    <thead>
-      <tr>
-        <th>Brands</th>
-        <th>Total Stok</th>
-        <th>Detail</th>
-      </tr>
-    </thead>
-    <tbody>
-      <% for (let i = 0; i < 3; i++) { %>
-      <tr>
-        <td><%= i %></td>
-        <td>Nike</td>
-        <td>
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            class="lucide lucide-ellipsis-icon lucide-ellipsis"
-          >
-            <circle
-              cx="12"
-              cy="12"
-              r="1"
-            />
-            <circle
-              cx="19"
-              cy="12"
-              r="1"
-            />
-            <circle
-              cx="5"
-              cy="12"
-              r="1"
-            />
-          </svg>
-        </td>
-      </tr>
-      <% } %>
-    </tbody>
-  </table>
+<div class="space-y-10">
+  <div class="space-y-1 flex">
+    <div>
+      <h1 class="text-4xl font-bold">Brands</h1>
+      <p class="text-base-content/75">Manage all brands</p>
+    </div>
+    <div class="ml-auto">
+      <a
+        href="/dashboard/brands/new"
+        class="flex items-center btn btn-primary"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          class="lucide lucide-plus-icon lucide-plus"
+        >
+          <path d="M5 12h14" />
+          <path d="M12 5v14" />
+        </svg>
+        <span>Create new</span>
+      </a>
+    </div>
+  </div>
+
+  <div class="space-y-4">
+    <%- include('../components/table/dataTable', {
+      model: 'brands',
+      query: query,
+      sort: sort,
+      columns: [
+        { field: 'id', label: 'ID', sortable: false },
+        { field: 'name', label: 'Nama', sortable: true },
+      ],
+      rows: brands
+    }) %>
+  </div>
 </div>

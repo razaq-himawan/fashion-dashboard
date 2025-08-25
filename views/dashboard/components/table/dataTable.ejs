@@ -1,15 +1,15 @@
 <% 
-/*
-dataTable.ejs
-Params:
-  query: current search term
+/* 
+dataTable.ejs 
+Params: 
+  query: current search term 
   sort: current sort param
   columns: array of { field, label, sortable }
   rows: array of objects (your data)
-  model: string (e.g. "products")
-  actions: function(row) => HTML for action buttons
-*/
-%> 
+  model: string (e.g. "products") 
+  actions: function(row) => HTML for action buttons 
+*/ 
+%>
 
 <div class="flex gap-2 justify-end">
   <form
@@ -58,7 +58,7 @@ Params:
           { %> <%= col.label %> <% } %>
         </th>
         <% }) %>
-        <th>Actions</th>
+        <th class="w-32 text-center">Actions</th>
       </tr>
     </thead>
 
@@ -68,7 +68,9 @@ Params:
         <% columns.forEach(col => { %>
         <td><%= row[col.field] %></td>
         <% }) %>
-        <td><%- include('rowActions', { model: model, row: row }) %></td>
+        <td class="w-32 text-center">
+          <%- include('rowActions', { model: model, row: row }) %>
+        </td>
       </tr>
       <% }) %>
     </tbody>
