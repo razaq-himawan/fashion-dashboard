@@ -1,0 +1,79 @@
+<% if (success && success.length > 0) { %>
+<div class="toast transition-opacity duration-500 opacity-100 z-50">
+  <div class="alert alert-success shadow-lg my-2">
+    <div class="flex gap-2">
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        class="lucide lucide-circle-check-icon lucide-circle-check"
+      >
+        <circle
+          cx="12"
+          cy="12"
+          r="10"
+        />
+        <path d="m9 12 2 2 4-4" />
+      </svg>
+      <span><%= success %></span>
+    </div>
+  </div>
+</div>
+<% } %> <% if (error && error.length > 0) { %>
+<div class="toast transition-opacity duration-500 opacity-100 z-50">
+  <div class="alert alert-error shadow-lg my-2">
+    <div class="flex gap-2">
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        class="lucide lucide-circle-alert-icon lucide-circle-alert"
+      >
+        <circle
+          cx="12"
+          cy="12"
+          r="10"
+        />
+        <line
+          x1="12"
+          x2="12"
+          y1="8"
+          y2="12"
+        />
+        <line
+          x1="12"
+          x2="12.01"
+          y1="16"
+          y2="16"
+        />
+      </svg>
+      <span><%= error %></span>
+    </div>
+  </div>
+</div>
+<% } %>
+
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const toasts = document.querySelectorAll(".toast");
+    toasts.forEach((toast) => {
+      setTimeout(() => {
+        toast.classList.add("opacity-0");
+        toast.classList.remove("opacity-100");
+        setTimeout(() => toast.remove(), 500);
+      }, 3000);
+    });
+  });
+</script>
