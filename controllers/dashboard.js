@@ -1,8 +1,8 @@
-const Brands = require("../models/brands");
-const Categories = require("../models/categories");
+const Brand = require("../models/brand");
+const Category = require("../models/category");
 const Product = require("../models/product");
-const Colors = require("../models/Colors");
-const Sizes = require("../models/Sizes");
+const Color = require("../models/color");
+const Size = require("../models/size");
 const formatRupiah = require("../utils/formatRupiah");
 
 function overview(req, res) {
@@ -23,7 +23,7 @@ async function products(req, res) {
 
 async function brands(req, res) {
   const { q, sort } = req.query;
-  const allBrands = await Brands.findAll({ q, sort });
+  const allBrands = await Brand.findAll({ q, sort });
 
   res.render("dashboard/products/brands", {
     brands: allBrands,
@@ -35,7 +35,7 @@ async function brands(req, res) {
 
 async function categories(req, res) {
   const { q, sort } = req.query;
-  const allCategories = await Categories.findAll({ q, sort });
+  const allCategories = await Category.findAll({ q, sort });
 
   res.render("dashboard/products/categories", {
     categories: allCategories,
@@ -47,7 +47,7 @@ async function categories(req, res) {
 
 async function colors(req, res) {
   const { q, sort } = req.query;
-  const allColors = await Colors.findAll({ q, sort });
+  const allColors = await Color.findAll({ q, sort });
 
   res.render("dashboard/products/colors", {
     colors: allColors,
@@ -59,7 +59,7 @@ async function colors(req, res) {
 
 async function sizes(req, res) {
   const { q, sort } = req.query;
-  const allSizes = await Sizes.findAll({ q, sort });
+  const allSizes = await Size.findAll({ q, sort });
 
   res.render("dashboard/products/sizes", {
     sizes: allSizes,

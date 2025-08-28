@@ -1,8 +1,8 @@
 const pool = require("../database/db");
 
-const Brands = {
+const Category = {
   async findAll({ q, sort } = {}) {
-    let baseQuery = `SELECT * FROM brands`;
+    let baseQuery = `SELECT * FROM categories`;
 
     const params = [];
 
@@ -25,11 +25,11 @@ const Brands = {
 
   async findById(id) {
     const [rows] = await pool.query(
-      `SELECT * FROM brands WHERE id = ? LIMIT 1`,
+      `SELECT * FROM categories WHERE id = ? LIMIT 1`,
       [id]
     );
     return rows[0];
   },
 };
 
-module.exports = Brands;
+module.exports = Category;

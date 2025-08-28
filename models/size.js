@@ -1,8 +1,8 @@
 const pool = require("../database/db");
 
-const Colors = {
+const Size = {
   async findAll({ q, sort } = {}) {
-    let baseQuery = `SELECT * FROM colors`;
+    let baseQuery = `SELECT * FROM sizes`;
 
     const params = [];
 
@@ -25,11 +25,11 @@ const Colors = {
 
   async findById(id) {
     const [rows] = await pool.query(
-      `SELECT * FROM colors WHERE id = ? LIMIT 1`,
+      `SELECT * FROM sizes WHERE id = ? LIMIT 1`,
       [id]
     );
     return rows[0];
   },
 };
 
-module.exports = Colors;
+module.exports = Size;
