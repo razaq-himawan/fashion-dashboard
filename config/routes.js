@@ -4,10 +4,16 @@ const PRODUCT_TYPES = require("../lib/types/product");
 
 const authRouter = require("../routes/auth");
 const dashboardRouter = require("../routes/dashboard");
+const Product = require("../models/product");
 
 function routesCfg(app) {
-  app.get("/", (req, res) => {
-    res.render("home", { currentPath: req.path, productTypes: PRODUCT_TYPES });
+  app.get("/", async (req, res) => {
+    const productTypesWithStock = await Product.findAllTypesWithStock();
+
+    res.render("home", {
+      currentPath: req.path,
+      productTypes: productTypesWithStock,
+    });
   });
 
   app.use("/", authRouter);

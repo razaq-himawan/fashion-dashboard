@@ -11,12 +11,41 @@ function getRandomPrice(min = 50000, max = 1000000, step = 1000) {
   return min + randomStep * step;
 }
 
-function getRandomStock(min = 5, max = 100) {
+function getRandomStock(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
 function generateProductCode(i) {
   return `PRD-${String(i).padStart(5, "0")}`;
+}
+
+function getRandomDateInMonth(monthOffset = 0) {
+  // monthOffset: 0 = current month, -1 = last month
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = now.getMonth() + monthOffset; // adjust month
+
+  // ensure correct rollover (e.g., Jan -1 → Dec last year)
+  const date = new Date(year, month, 1);
+  const daysInMonth = new Date(
+    date.getFullYear(),
+    date.getMonth() + 1,
+    0
+  ).getDate();
+
+  const day = Math.floor(Math.random() * daysInMonth) + 1;
+  const hour = Math.floor(Math.random() * 24);
+  const minute = Math.floor(Math.random() * 60);
+  const second = Math.floor(Math.random() * 60);
+
+  return new Date(
+    date.getFullYear(),
+    date.getMonth(),
+    day,
+    hour,
+    minute,
+    second
+  );
 }
 
 async function seedProducts() {
@@ -38,7 +67,6 @@ async function seedProducts() {
   const categories = await getIds("categories");
   const colors = await getIds("colors");
 
-  // Get product types
   const [productTypes] = await connection.query(
     "SELECT id, name FROM product_types"
   );
@@ -83,7 +111,13 @@ async function seedProducts() {
 
     const price = getRandomPrice();
     const productCode = generateProductCode(i);
-    const stock = getRandomStock();
+
+    const isLastMonth = i <= 30;
+    const stock = isLastMonth ? getRandomStock(50, 120) : getRandomStock(5, 50);
+
+    const createdAt = isLastMonth
+      ? getRandomDateInMonth(-1)
+      : getRandomDateInMonth(0);
 
     products.push([
       productCode,
@@ -95,18 +129,21 @@ async function seedProducts() {
       sizeId,
       price,
       stock,
+      createdAt,
     ]);
   }
 
   const insertQuery = `
     INSERT INTO products (
-      product_code, name, product_type_id, brand_id, category_id, color_id, size_id, price, stock
+      product_code, name, product_type_id, brand_id, category_id, color_id, size_id, price, stock, created_at
     ) VALUES ?
   `;
 
   await connection.query(insertQuery, [products]);
 
-  console.log("✅ Successfully inserted 60 products.");
+  console.log(
+    "✅ Successfully inserted 60 products (30 last month with higher stock, 30 this month with lower stock)."
+  );
   await connection.end();
 }
 

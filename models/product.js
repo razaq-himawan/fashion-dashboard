@@ -86,6 +86,37 @@ const Product = {
     return rows;
   },
 
+  async findAllTypesWithStock() {
+    const [rows] = await pool.query(
+      `SELECT 
+       pt.id,
+       pt.name,
+       COALESCE(
+         SUM(
+           CASE 
+             WHEN p.created_at >= DATE_FORMAT(CURRENT_DATE, '%Y-%m-01')
+              AND p.created_at < DATE_FORMAT(CURRENT_DATE + INTERVAL 1 MONTH, '%Y-%m-01')
+             THEN p.stock ELSE 0
+           END
+         ), 0
+       ) AS totalStock,
+       COALESCE(
+         SUM(
+           CASE 
+             WHEN p.created_at >= DATE_FORMAT(CURRENT_DATE - INTERVAL 1 MONTH, '%Y-%m-01')
+              AND p.created_at < DATE_FORMAT(CURRENT_DATE, '%Y-%m-01')
+             THEN p.stock ELSE 0
+           END
+         ), 0
+       ) AS lastMonthStock
+     FROM product_types pt
+     LEFT JOIN products p ON pt.id = p.product_type_id
+     GROUP BY pt.id, pt.name
+     ORDER BY pt.id`
+    );
+    return rows;
+  },
+
   async findByBrand(brandId) {
     const [rows] = await pool.query(
       `SELECT * FROM products WHERE brand_id = ?`,

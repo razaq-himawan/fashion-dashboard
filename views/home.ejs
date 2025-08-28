@@ -8,18 +8,20 @@
     <div class="card w-72 bg-base-100 card-sm shadow-sm">
       <div class="card-body">
         <div class="flex items-start">
-          <h3 class="card-title text-zinc-500"><%= type %></h3>
+          <h3 class="card-title text-zinc-500"><%= type.name %></h3>
           <div class="badge badge-ghost ml-auto p-1 min-h-0 h-auto">
             <img
-              src="/img/<%= type.toLowerCase() %>.png"
-              alt="<%= type %>"
+              src="/img/<%= type.name.toLowerCase() %>.png"
+              alt="<%= type.name %>"
               class="w-8 h-8 grayscale dark:invert"
             />
           </div>
         </div>
         <div>
-          <p class="text-3xl font-bold">50</p>
-          <p class="text-zinc-500">dari 100 barang bulan kemarin</p>
+          <p class="text-3xl font-bold"><%= type.totalStock %></p>
+          <p class="text-zinc-500">
+            dari <%= type.lastMonthStock %> barang bulan kemarin
+          </p>
         </div>
       </div>
     </div>
