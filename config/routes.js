@@ -1,7 +1,5 @@
 const ErrorHandler = require("../utils/Errorhandler");
 
-const PRODUCT_TYPES = require("../lib/types/product");
-
 const authRouter = require("../routes/auth");
 const dashboardRouter = require("../routes/dashboard");
 const Product = require("../models/product");
