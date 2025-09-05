@@ -7,7 +7,9 @@ const wrapAsync = require("../utils/wrapAsync");
 
 const router = express.Router();
 
-router.route("/").get(isAuth, dashboardController.overview);
+router.use(isAuth)
+
+router.route("/").get(wrapAsync(dashboardController.overview));
 
 router.route("/products").get(wrapAsync(dashboardController.products));
 

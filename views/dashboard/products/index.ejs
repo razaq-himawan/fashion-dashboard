@@ -37,14 +37,14 @@
       query: query,
       sort: sort,
       columns: [
-        { field: 'id', label: 'ID', sortable: false },
+        { field: 'id', label: 'ID', sortable: true },
         { field: 'name', label: 'Nama', sortable: false },
         { field: 'brand', label: 'Brand', sortable: false },
         { field: 'product_type', label: 'Tipe', sortable: false },
         { field: 'category', label: 'Kategori', sortable: false },
         { field: 'color', label: 'Warna', sortable: false },
         { field: 'size', label: 'Ukuran', sortable: false },
-        { field: 'price', label: 'Harga', sortable: true },
+        { field: 'price', label: 'Harga', sortable: true, format: (value) => formatRupiah(value) },
         { field: 'stock', label: 'Stok', sortable: true },
       ],
       rows: products

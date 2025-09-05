@@ -1,7 +1,43 @@
 const pool = require("../database/db");
 const bcrypt = require("bcrypt");
+const paginate = require("../lib/helpers/paginate");
 
 const User = {
+  async findAll({ q, sort, page, perPage } = {}) {
+    let baseQuery = `
+      SELECT 
+        u.id,
+        u.username,
+        u.email,
+        u.role,
+        u.created_at,
+        COUNT(o.id) AS total_orders,
+        COALESCE(SUM(o.total_amount), 0) AS total_spent
+      FROM users u
+      LEFT JOIN orders o ON u.id = o.user_id
+    `;
+
+    const params = [];
+
+    if (q) {
+      baseQuery += ` WHERE u.username LIKE ? OR u.email LIKE ?`;
+      params.push(`%${q}%`, `%${q}%`);
+    }
+
+    baseQuery += ` GROUP BY u.id`;
+
+    const allowedSorts = {
+      username_asc: "u.username ASC",
+      username_desc: "u.username DESC",
+      newest: "u.created_at DESC",
+      oldest: "u.created_at ASC",
+      total_spent_desc: "total_spent DESC",
+      total_spent_asc: "total_spent ASC",
+    };
+
+    return paginate(baseQuery, params, { sort, allowedSorts, page, perPage });
+  },
+
   async findByUsername(username) {
     const [rows] = await pool.query(
       `SELECT * FROM users WHERE username = ? LIMIT 1`,

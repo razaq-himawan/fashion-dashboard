@@ -1,3 +1,48 @@
 <% layout("layouts/dashboard") %>
 
-<h1>Users</h1>
+<div class="space-y-10">
+  <div class="space-y-1 flex">
+    <div>
+      <h1 class="text-4xl font-bold">Users</h1>
+      <p class="text-base-content/75">Manage all users</p>
+    </div>
+    <div class="ml-auto">
+      <a
+        href="/dashboard/sizes/new"
+        class="flex items-center btn btn-primary"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          class="lucide lucide-plus-icon lucide-plus"
+        >
+          <path d="M5 12h14" />
+          <path d="M12 5v14" />
+        </svg>
+        <span>Create new</span>
+      </a>
+    </div>
+  </div>
+
+  <div class="space-y-4">
+    <%- include('./components/table/dataTable', {
+      model: 'users',
+      query: query,
+      sort: sort,
+      columns: [
+        { field: 'id', label: 'ID', sortable: true },
+        { field: 'username', label: 'Nama', sortable: true, format: capitalize },
+        { field: 'email', label: 'Email', sortable: false },
+        { field: 'role', label: 'Role', sortable: true },
+      ],
+      rows: users
+    }) %>
+  </div>
+</div>

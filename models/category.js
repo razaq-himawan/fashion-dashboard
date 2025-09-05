@@ -1,7 +1,8 @@
 const pool = require("../database/db");
+const paginate = require("../lib/helpers/paginate");
 
 const Category = {
-  async findAll({ q, sort } = {}) {
+  async findAll({ q, sort, page, perPage } = {}) {
     let baseQuery = `SELECT * FROM categories`;
 
     const params = [];
@@ -12,15 +13,14 @@ const Category = {
     }
 
     const allowedSorts = {
+      id_asc: "id ASC",
+      id_desc: "id DESC",
       name_asc: "name ASC",
       name_desc: "name DESC",
       newest: "created_at DESC",
     };
 
-    baseQuery += ` ORDER BY ${allowedSorts[sort] || "created_at DESC"}`;
-
-    const [rows] = await pool.query(baseQuery, params);
-    return rows;
+    return paginate(baseQuery, params, { sort, allowedSorts, page, perPage });
   },
 
   async findById(id) {

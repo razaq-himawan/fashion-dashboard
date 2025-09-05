@@ -2,15 +2,20 @@ const ErrorHandler = require("../utils/Errorhandler");
 
 const authRouter = require("../routes/auth");
 const dashboardRouter = require("../routes/dashboard");
-const Product = require("../models/product");
+const Analytics = require("../models/analytics");
+const Order = require("../models/order");
+const formatRupiah = require("../lib/helpers/formatRupiah");
 
 function routesCfg(app) {
   app.get("/", async (req, res) => {
-    const productTypesWithStock = await Product.findAllTypesWithStock();
+    const productTypeAnalytics = await Analytics.productTypeAnalytics();
+    const latestOrders = await Order.latestOrders();
 
     res.render("home", {
       currentPath: req.path,
-      productTypes: productTypesWithStock,
+      productTypes: productTypeAnalytics,
+      latestOrders,
+      formatRupiah,
     });
   });
 

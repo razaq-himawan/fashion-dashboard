@@ -1,0 +1,49 @@
+<%
+function renderPageLinks(pagination) {
+  const total = pagination.totalPages;
+  const current = pagination.currentPage;
+  const pagesToShow = 5;
+
+  let start = Math.max(1, current - Math.floor(pagesToShow / 2));
+  let end = start + pagesToShow - 1;
+
+  if (end > total) {
+    end = total;
+    start = Math.max(1, end - pagesToShow + 1);
+  }
+
+  const pages = [];
+  for (let i = start; i <= end; i++) {
+    pages.push(i);
+  }
+
+  return pages;
+}
+%>
+
+<% if (pagination && pagination.totalPages > 1) { %>
+<div class="join flex justify-end mt-2">
+  <!-- Prev -->
+  <a 
+    href="?q=<%= query %>&sort=<%= sort %>&page=<%= Math.max(pagination.currentPage - 1, 1) %>" 
+    class="join-item btn <%= pagination.currentPage > 1 ? '' : 'btn-disabled' %>">
+    Prev
+  </a>
+
+  <!-- Page numbers -->
+  <% renderPageLinks(pagination).forEach(p => { %>
+    <a 
+      href="?q=<%= query %>&sort=<%= sort %>&page=<%= p %>" 
+      class="join-item btn <%= p === pagination.currentPage ? 'btn-active' : '' %>">
+      <%= p %>
+    </a>
+  <% }) %>
+
+  <!-- Next -->
+  <a 
+    href="?q=<%= query %>&sort=<%= sort %>&page=<%= Math.min(pagination.currentPage + 1, pagination.totalPages) %>" 
+    class="join-item btn <%= pagination.currentPage < pagination.totalPages ? '' : 'btn-disabled' %>">
+    Next
+  </a>
+</div>
+<% } %>

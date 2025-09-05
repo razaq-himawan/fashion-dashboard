@@ -3,18 +3,52 @@ const Category = require("../models/category");
 const Product = require("../models/product");
 const Color = require("../models/color");
 const Size = require("../models/size");
-const formatRupiah = require("../utils/formatRupiah");
+const Order = require("../models/order");
+const User = require("../models/user");
+const Analytics = require("../models/analytics");
 
-function overview(req, res) {
-  res.render("dashboard/overview");
+const formatRupiah = require("../lib/helpers/formatRupiah");
+const capitalize = require("../lib/helpers/capitalize");
+
+async function overview(req, res) {
+  const [
+    topProducts,
+    revenueByType,
+    salesPerMonth,
+    dailySales,
+    monthlyGrowth,
+    topCustomers,
+  ] = await Promise.all([
+    Analytics.topSellingProducts(5),
+    Analytics.revenueByType(),
+    Analytics.salesPerMonth(),
+    Analytics.dailySalesCurrentMonth(),
+    Analytics.monthlyGrowth(),
+    Analytics.topCustomers(5),
+  ]);
+
+  res.render("dashboard/overview", {
+    topProducts,
+    revenueByType,
+    salesPerMonth,
+    dailySales,
+    monthlyGrowth,
+    topCustomers,
+    formatRupiah,
+  });
 }
 
 async function products(req, res) {
   const { q, sort } = req.query;
-  const allProducts = await Product.findAll({ q, sort });
+  const productsData = await Product.findAll({
+    q,
+    sort,
+    page: req.query.page,
+  });
 
   res.render("dashboard/products", {
-    products: allProducts,
+    products: productsData.rows,
+    pagination: productsData,
     formatRupiah,
     query: q || "",
     sort: sort || "",
@@ -23,10 +57,15 @@ async function products(req, res) {
 
 async function brands(req, res) {
   const { q, sort } = req.query;
-  const allBrands = await Brand.findAll({ q, sort });
+  const brandsData = await Brand.findAll({
+    q,
+    sort,
+    page: req.query.page,
+  });
 
   res.render("dashboard/products/brands", {
-    brands: allBrands,
+    brands: brandsData.rows,
+    pagination: brandsData,
     formatRupiah,
     query: q || "",
     sort: sort || "",
@@ -35,10 +74,15 @@ async function brands(req, res) {
 
 async function categories(req, res) {
   const { q, sort } = req.query;
-  const allCategories = await Category.findAll({ q, sort });
+  const categoriesData = await Category.findAll({
+    q,
+    sort,
+    page: req.query.page,
+  });
 
   res.render("dashboard/products/categories", {
-    categories: allCategories,
+    categories: categoriesData.rows,
+    pagination: categoriesData,
     formatRupiah,
     query: q || "",
     sort: sort || "",
@@ -47,10 +91,15 @@ async function categories(req, res) {
 
 async function colors(req, res) {
   const { q, sort } = req.query;
-  const allColors = await Color.findAll({ q, sort });
+  const colorsData = await Color.findAll({
+    q,
+    sort,
+    page: req.query.page,
+  });
 
   res.render("dashboard/products/colors", {
-    colors: allColors,
+    colors: colorsData.rows,
+    pagination: colorsData,
     formatRupiah,
     query: q || "",
     sort: sort || "",
@@ -59,10 +108,15 @@ async function colors(req, res) {
 
 async function sizes(req, res) {
   const { q, sort } = req.query;
-  const allSizes = await Size.findAll({ q, sort });
+  const sizesData = await Size.findAll({
+    q,
+    sort,
+    page: req.query.page,
+  });
 
   res.render("dashboard/products/sizes", {
-    sizes: allSizes,
+    sizes: sizesData.rows,
+    pagination: sizesData,
     formatRupiah,
     query: q || "",
     sort: sort || "",
@@ -70,11 +124,38 @@ async function sizes(req, res) {
 }
 
 async function users(req, res) {
-  res.render("dashboard/users");
+  const { q, sort } = req.query;
+  const usersData = await User.findAll({
+    q,
+    sort,
+    page: req.query.page,
+  });
+
+  res.render("dashboard/users", {
+    users: usersData.rows,
+    pagination: usersData,
+    capitalize,
+    query: q || "",
+    sort: sort || "",
+  });
 }
 
 async function orders(req, res) {
-  res.render("dashboard/orders");
+  const { q, sort } = req.query;
+  const ordersData = await Order.findAll({
+    q,
+    sort,
+    page: req.query.page,
+  });
+
+  res.render("dashboard/orders", {
+    orders: ordersData.rows,
+    pagination: ordersData,
+    formatRupiah,
+    capitalize,
+    query: q || "",
+    sort: sort || "",
+  });
 }
 
 module.exports = {

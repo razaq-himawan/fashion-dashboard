@@ -27,7 +27,7 @@ async function seedDatabase() {
 
   try {
     await connection.query(
-      `DROP TABLE IF EXISTS products, users, brands, categories, colors, sizes, product_type_sizes, product_types`
+      `DROP TABLE IF EXISTS products, users, brands, categories, colors, sizes, product_type_sizes, product_types, order_items, orders`
     );
 
     // Users
@@ -37,7 +37,7 @@ async function seedDatabase() {
         username VARCHAR(50) NOT NULL UNIQUE,
         email VARCHAR(100) NOT NULL UNIQUE,
         password_hash VARCHAR(255) NOT NULL,
-        role ENUM('owner', 'manager') NOT NULL DEFAULT 'manager',
+        role ENUM('owner', 'manager', 'customer') NOT NULL DEFAULT 'customer',
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
       );
@@ -99,6 +99,56 @@ async function seedDatabase() {
         FOREIGN KEY (color_id) REFERENCES colors(id),
         FOREIGN KEY (size_id) REFERENCES sizes(id)
       );
+    `);
+
+    // Orders
+    await connection.query(`
+      CREATE TABLE orders (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        user_id INT NOT NULL,
+        status ENUM('pending','paid','shipped','completed','cancelled') DEFAULT 'pending',
+        total_amount DECIMAL(10,2) NOT NULL,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users(id)
+      );
+    `);
+
+    // Order Items
+    await connection.query(`
+      CREATE TABLE order_items (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        order_id INT NOT NULL,
+        product_id INT NOT NULL,
+        quantity INT NOT NULL DEFAULT 1,
+        price DECIMAL(10,2) NOT NULL,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        FOREIGN KEY (order_id) REFERENCES orders(id),
+        FOREIGN KEY (product_id) REFERENCES products(id)
+      );
+    `);
+
+    // Trigger: reduce stock when order_item inserted
+    await connection.query(`
+      CREATE TRIGGER trg_reduce_stock AFTER INSERT ON order_items
+      FOR EACH ROW
+      BEGIN
+        UPDATE products
+        SET stock = stock - NEW.quantity
+        WHERE id = NEW.product_id;
+      END;
+    `);
+
+    // Trigger: restore stock if order_item deleted
+    await connection.query(`
+      CREATE TRIGGER trg_restore_stock AFTER DELETE ON order_items
+      FOR EACH ROW
+      BEGIN
+        UPDATE products
+        SET stock = stock + OLD.quantity
+        WHERE id = OLD.product_id;
+      END;
     `);
 
     // Seed data
@@ -164,12 +214,60 @@ async function seedDatabase() {
       }
     }
 
+    // Create admin user
     const saltRounds = 10;
     const hashedPassword = await bcrypt.hash("admin123", saltRounds);
     await connection.query(
       `INSERT INTO users (username, email, password_hash, role) VALUES (?, ?, ?, ?)`,
       ["admin", "admin@example.com", hashedPassword, "owner"]
     );
+
+    // Create manager user
+    const managerUser = [
+      { username: "ivan", email: "ivan@example.com" },
+      { username: "julian", email: "julian@example.com" },
+      { username: "katarina", email: "katarina@example.com" },
+    ];
+
+    for (const u of managerUser) {
+      const pw = await bcrypt.hash("password123", saltRounds);
+      await connection.query(
+        `INSERT INTO users (username, email, password_hash, role) VALUES (?, ?, ?, ?)`,
+        [u.username, u.email, pw, "customer"]
+      );
+    }
+
+    // Create demo users
+    const demoUsers = [
+      { username: "alice", email: "alice@example.com" },
+      { username: "bob", email: "bob@example.com" },
+      { username: "charlie", email: "charlie@example.com" },
+    ];
+
+    for (const u of demoUsers) {
+      const pw = await bcrypt.hash("password123", saltRounds);
+      await connection.query(
+        `INSERT INTO users (username, email, password_hash, role) VALUES (?, ?, ?, ?)`,
+        [u.username, u.email, pw, "customer"]
+      );
+    }
+
+    // After creating demo users, let's add more users for historical orders
+    const historicalUsers = [
+      { username: "david", email: "david@example.com" },
+      { username: "eve", email: "eve@example.com" },
+      { username: "frank", email: "frank@example.com" },
+      { username: "grace", email: "grace@example.com" },
+      { username: "heidi", email: "heidi@example.com" },
+    ];
+
+    for (const u of historicalUsers) {
+      const pw = await bcrypt.hash("password123", saltRounds);
+      await connection.query(
+        `INSERT INTO users (username, email, password_hash, role) VALUES (?, ?, ?, ?)`,
+        [u.username, u.email, pw, "customer"]
+      );
+    }
 
     console.log("✅ Database seeded successfully.");
   } catch (err) {

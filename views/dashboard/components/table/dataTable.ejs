@@ -66,7 +66,13 @@ Params:
       <% rows.forEach(row => { %>
       <tr>
         <% columns.forEach(col => { %>
-        <td><%= row[col.field] %></td>
+        <td>
+          <% if (col.format) { %>
+            <%= col.format(row[col.field]) %>
+          <% } else { %>
+            <%= row[col.field] %>
+          <% } %>
+        </td>
         <% }) %>
         <td class="w-32 text-center">
           <%- include('rowActions', { model: model, row: row }) %>
@@ -76,3 +82,5 @@ Params:
     </tbody>
   </table>
 </div>
+
+<%- include("./pagination")%>

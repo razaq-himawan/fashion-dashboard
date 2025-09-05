@@ -1,7 +1,8 @@
 const pool = require("../database/db");
+const paginate = require("../lib/helpers/paginate");
 
 const Product = {
-  async findAll({ q, sort } = {}) {
+  async findAll({ q, sort, page, perPage } = {}) {
     let baseQuery = `
     SELECT p.id,
            p.product_code,
@@ -29,6 +30,8 @@ const Product = {
     }
 
     const allowedSorts = {
+      id_asc: "p.id ASC",
+      id_desc: "p.id DESC",
       price_asc: "p.price ASC",
       price_desc: "p.price DESC",
       stock_asc: "p.stock ASC",
@@ -36,10 +39,7 @@ const Product = {
       newest: "p.created_at DESC",
     };
 
-    baseQuery += ` ORDER BY ${allowedSorts[sort] || "p.created_at DESC"}`;
-
-    const [rows] = await pool.query(baseQuery, params);
-    return rows;
+    return paginate(baseQuery, params, { sort, allowedSorts, page, perPage });
   },
 
   async findById(id) {
@@ -82,37 +82,6 @@ const Product = {
     const [rows] = await pool.query(
       `SELECT * FROM products WHERE product_type_id = ?`,
       [typeId]
-    );
-    return rows;
-  },
-
-  async findAllTypesWithStock() {
-    const [rows] = await pool.query(
-      `SELECT 
-       pt.id,
-       pt.name,
-       COALESCE(
-         SUM(
-           CASE 
-             WHEN p.created_at >= DATE_FORMAT(CURRENT_DATE, '%Y-%m-01')
-              AND p.created_at < DATE_FORMAT(CURRENT_DATE + INTERVAL 1 MONTH, '%Y-%m-01')
-             THEN p.stock ELSE 0
-           END
-         ), 0
-       ) AS totalStock,
-       COALESCE(
-         SUM(
-           CASE 
-             WHEN p.created_at >= DATE_FORMAT(CURRENT_DATE - INTERVAL 1 MONTH, '%Y-%m-01')
-              AND p.created_at < DATE_FORMAT(CURRENT_DATE, '%Y-%m-01')
-             THEN p.stock ELSE 0
-           END
-         ), 0
-       ) AS lastMonthStock
-     FROM product_types pt
-     LEFT JOIN products p ON pt.id = p.product_type_id
-     GROUP BY pt.id, pt.name
-     ORDER BY pt.id`
     );
     return rows;
   },
@@ -164,28 +133,14 @@ const Product = {
     return rows;
   },
 
-  async countByType() {
-    const [rows] = await pool.query(`
-      SELECT pt.name, COUNT(p.id) AS total
-      FROM products p
-      LEFT JOIN product_types pt ON p.product_type_id = pt.id
-      GROUP BY pt.name
-      ORDER BY total DESC
-    `);
-    return rows;
-  },
-
-  async countByTypeWithStock() {
-    const [rows] = await pool.query(`
-    SELECT 
-      pt.name, 
-      COUNT(p.id) AS total_products,
-      SUM(p.stock) AS total_stock
-    FROM products p
-    LEFT JOIN product_types pt ON p.product_type_id = pt.id
-    GROUP BY pt.name
-    ORDER BY total_stock DESC
-  `);
+  async lowStock(threshold = 5) {
+    const [rows] = await pool.query(
+      `SELECT id, product_code, name, stock, price
+       FROM products
+       WHERE stock <= ?
+       ORDER BY stock ASC`,
+      [threshold]
+    );
     return rows;
   },
 };
