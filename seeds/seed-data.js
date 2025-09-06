@@ -41,6 +41,15 @@ function getRandomDateInMonth(monthOffset = 0) {
   return new Date(year, month, day, hour, minute, second);
 }
 
+function getRandomDateWithinLastMonths(maxMonthsAgo = 6) {
+  const now = new Date();
+  const past = new Date();
+  past.setMonth(now.getMonth() - maxMonthsAgo);
+  const time =
+    past.getTime() + Math.random() * (now.getTime() - past.getTime());
+  return new Date(time);
+}
+
 async function seedProductsAndOrders() {
   const connection = await mysql.createConnection({
     host: process.env.DB_HOST,
@@ -81,7 +90,7 @@ async function seedProductsAndOrders() {
   }
 
   const products = [];
-  const productStockMap = {}; // keep track of each product's stock for orders
+  const productStockMap = {}; // track stock for orders
 
   for (let i = 1; i <= 60; i++) {
     const productType = getRandomElement(productTypes);
@@ -102,7 +111,7 @@ async function seedProductsAndOrders() {
     }`;
     const price = getRandomPrice();
     const productCode = generateProductCode(i);
-    const initialStock = getRandomStock(100, 200); // starting stock 6 months ago
+    const initialStock = getRandomStock(50, 100);
 
     products.push([
       productCode,
@@ -114,7 +123,7 @@ async function seedProductsAndOrders() {
       sizeId,
       price,
       initialStock,
-      getRandomDateInMonth(-6),
+      getRandomDateWithinLastMonths(6), // created within last 6 months
     ]);
     productStockMap[i] = initialStock;
   }
@@ -129,7 +138,9 @@ async function seedProductsAndOrders() {
   // --- Generate monthly orders for past 6 months ---
   console.log("Generating orders over the past 6 months...");
 
-  const [users] = await connection.query("SELECT id, username FROM users");
+  const [customers] = await connection.query(
+    "SELECT id, username FROM users WHERE role = 'customer'"
+  );
   const [productRows] = await connection.query(
     "SELECT id, price FROM products"
   );
@@ -137,18 +148,22 @@ async function seedProductsAndOrders() {
   const orderItems = [];
 
   for (let monthOffset = -5; monthOffset <= 0; monthOffset++) {
-    const numOrders = getRandomStock(5, 10); // 5–10 orders per month
+    const base = 3 + (6 + monthOffset); // fewer in past, more in recent months
+    const numOrders = getRandomStock(base, base + 5);
 
     for (let o = 0; o < numOrders; o++) {
-      const itemsCount = Math.floor(Math.random() * 3) + 1; // 1–3 products per order
+      const itemsCount = Math.floor(Math.random() * 3) + 1;
       const chosenProducts = [];
       let totalAmount = 0;
 
       for (let j = 0; j < itemsCount; j++) {
         const product = getRandomElement(productRows);
+        if (!productStockMap[product.id] || productStockMap[product.id] <= 0)
+          continue;
 
-        // Ensure stock exists
-        const maxQty = Math.min(productStockMap[product.id], 5) || 1;
+        const maxQty = Math.min(productStockMap[product.id], 5);
+        if (maxQty <= 0) continue;
+
         const quantity = getRandomStock(1, maxQty);
         productStockMap[product.id] -= quantity;
 
@@ -161,16 +176,37 @@ async function seedProductsAndOrders() {
         });
       }
 
+      if (chosenProducts.length === 0) continue;
+
       const createdAt = getRandomDateInMonth(monthOffset);
-      const status =
-        monthOffset < 0
-          ? getRandomElement(["completed", "shipped"])
-          : getRandomElement(["pending", "paid"]);
-      const randomUser = getRandomElement(users);
+
+      let status;
+      if (monthOffset < -2) {
+        status = getRandomElement(["completed", "completed", "shipped"]);
+      } else if (monthOffset < 0) {
+        status = getRandomElement(["completed", "shipped", "paid"]);
+      } else {
+        status = getRandomElement(["pending", "paid", "cancelled"]);
+      }
+
+      let orderUserId = null;
+      let customerName = null;
+      let customerEmail = null;
+
+      customerName = `Guest ${Math.floor(Math.random() * 1000)}`;
+      customerEmail = `guest${Math.floor(Math.random() * 1000)}@example.com`;
 
       const [orderRes] = await connection.query(
-        "INSERT INTO orders (user_id, status, total_amount, created_at) VALUES (?, ?, ?, ?)",
-        [randomUser.id, status, totalAmount, createdAt]
+        `INSERT INTO orders (user_id, customer_name, customer_email, status, total_amount, created_at)
+         VALUES (?, ?, ?, ?, ?, ?)`,
+        [
+          orderUserId,
+          customerName,
+          customerEmail,
+          status,
+          totalAmount,
+          createdAt,
+        ]
       );
       const orderId = orderRes.insertId;
 
@@ -189,7 +225,9 @@ async function seedProductsAndOrders() {
 
   console.log(`✅ Inserted ${orderItems.length} order items over 6 months.`);
   await connection.end();
-  console.log("✅ Seeding complete with time-series data.");
+  console.log(
+    "✅ Seeding complete with realistic customer & guest sales data."
+  );
 }
 
 seedProductsAndOrders().catch((err) =>

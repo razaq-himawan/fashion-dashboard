@@ -9,7 +9,7 @@
   "scripts": {
     "start": "node app.js",
     "dev": "nodemon app.js",
-    "seed": "node seeds/seed.js && node seeds/seed-products.js && node seeds/views.js",
+    "seed": "node seeds/seed.js && node seeds/seed-data.js && node seeds/views.js",
     "watch:css": "npx @tailwindcss/cli -i src/style.css -o public/css/style.css --watch",
     "test": "echo \"Error: no test specified\" && exit 1"
   },

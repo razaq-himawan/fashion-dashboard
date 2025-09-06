@@ -3,7 +3,7 @@ const pool = require("../database/db");
 const Analytics = {
   // ---- PRODUCT ANALYTICS ----
   async productTypeAnalytics() {
-    const [rows] = await pool.query(`SELECT * FROM product_type_analytics`);
+    const [rows] = await pool.query(`SELECT * FROM view_product_stock_summary`);
     return rows;
   },
 

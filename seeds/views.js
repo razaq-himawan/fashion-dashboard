@@ -14,18 +14,20 @@ async function createViews() {
   try {
     // ---- PRODUCTS ----
     await connection.query(`
-      CREATE OR REPLACE VIEW view_product_type_analytics AS
-      SELECT
-        pt.id AS type_id,
+      CREATE OR REPLACE VIEW view_product_stock_summary AS
+      SELECT 
+        pt.id AS product_type_id,
         pt.name AS type_name,
-        COALESCE(SUM(p.stock), 0) AS total_stock,
-        COALESCE(SUM(oi.quantity), 0) AS sold_since_last_month,
-        (COALESCE(SUM(p.stock), 0) + COALESCE(SUM(oi.quantity), 0)) AS last_month_stock
+        COALESCE(SUM(p.stock), 0) AS current_stock,
+        (COALESCE(SUM(p.stock), 0) + COALESCE(SUM(CASE 
+            WHEN o.created_at >= DATE_SUB(CURDATE(), INTERVAL 1 MONTH) 
+              AND o.status IN ('paid','shipped','completed')
+            THEN oi.quantity ELSE 0 END), 0)
+        ) AS last_month_stock
       FROM product_types pt
       LEFT JOIN products p ON p.product_type_id = pt.id
       LEFT JOIN order_items oi ON oi.product_id = p.id
-      LEFT JOIN orders o ON o.id = oi.order_id AND o.status IN ('paid','shipped','completed')
-        AND o.created_at >= DATE_SUB(CURDATE(), INTERVAL 1 MONTH)
+      LEFT JOIN orders o ON oi.order_id = o.id
       GROUP BY pt.id, pt.name;
     `);
 
@@ -154,6 +156,25 @@ async function createViews() {
     `);
 
     // ---- USERS ----
+    await connection.query(`
+      CREATE OR REPLACE VIEW view_latest_order AS
+      SELECT 
+        o.id AS order_id,
+        o.user_id,
+        u.username,
+        o.status,
+        o.total_amount,
+        o.created_at,
+        COUNT(oi.id) AS total_items
+      FROM orders o
+      LEFT JOIN users u ON o.user_id = u.id
+      LEFT JOIN order_items oi ON o.id = oi.order_id
+      WHERE o.status IN ('pending','paid','shipped','completed')
+      GROUP BY o.id, o.user_id, u.username, o.status, o.total_amount, o.created_at
+      ORDER BY o.created_at DESC
+      LIMIT 1;
+    `);
+
     await connection.query(`
       CREATE OR REPLACE VIEW view_user_stats AS
       SELECT 

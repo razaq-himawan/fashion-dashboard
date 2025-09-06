@@ -37,7 +37,7 @@ async function seedDatabase() {
         username VARCHAR(50) NOT NULL UNIQUE,
         email VARCHAR(100) NOT NULL UNIQUE,
         password_hash VARCHAR(255) NOT NULL,
-        role ENUM('owner', 'manager', 'customer') NOT NULL DEFAULT 'customer',
+        role ENUM('owner', 'manager') NOT NULL DEFAULT 'manager',
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
       );
@@ -105,9 +105,12 @@ async function seedDatabase() {
     await connection.query(`
       CREATE TABLE orders (
         id INT AUTO_INCREMENT PRIMARY KEY,
-        user_id INT NOT NULL,
+        user_id INT NULL,
         status ENUM('pending','paid','shipped','completed','cancelled') DEFAULT 'pending',
         total_amount DECIMAL(10,2) NOT NULL,
+        customer_name VARCHAR(100) NULL,
+        customer_email VARCHAR(150) NULL,
+        customer_phone VARCHAR(50) NULL,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
         FOREIGN KEY (user_id) REFERENCES users(id)
@@ -233,39 +236,7 @@ async function seedDatabase() {
       const pw = await bcrypt.hash("password123", saltRounds);
       await connection.query(
         `INSERT INTO users (username, email, password_hash, role) VALUES (?, ?, ?, ?)`,
-        [u.username, u.email, pw, "customer"]
-      );
-    }
-
-    // Create demo users
-    const demoUsers = [
-      { username: "alice", email: "alice@example.com" },
-      { username: "bob", email: "bob@example.com" },
-      { username: "charlie", email: "charlie@example.com" },
-    ];
-
-    for (const u of demoUsers) {
-      const pw = await bcrypt.hash("password123", saltRounds);
-      await connection.query(
-        `INSERT INTO users (username, email, password_hash, role) VALUES (?, ?, ?, ?)`,
-        [u.username, u.email, pw, "customer"]
-      );
-    }
-
-    // After creating demo users, let's add more users for historical orders
-    const historicalUsers = [
-      { username: "david", email: "david@example.com" },
-      { username: "eve", email: "eve@example.com" },
-      { username: "frank", email: "frank@example.com" },
-      { username: "grace", email: "grace@example.com" },
-      { username: "heidi", email: "heidi@example.com" },
-    ];
-
-    for (const u of historicalUsers) {
-      const pw = await bcrypt.hash("password123", saltRounds);
-      await connection.query(
-        `INSERT INTO users (username, email, password_hash, role) VALUES (?, ?, ?, ?)`,
-        [u.username, u.email, pw, "customer"]
+        [u.username, u.email, pw, "manager"]
       );
     }
 

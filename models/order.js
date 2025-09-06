@@ -63,13 +63,22 @@ const Order = {
   async latestOrders(limit = 5) {
     const [rows] = await pool.query(
       `
-      SELECT o.*, u.username, u.email, COUNT(oi.id) AS item_count
-      FROM orders o
-      JOIN users u ON o.user_id = u.id
-      LEFT JOIN order_items oi ON o.id = oi.order_id
-      GROUP BY o.id, u.id
-      ORDER BY o.created_at DESC
-      LIMIT ?
+        SELECT 
+          o.id AS order_id,
+          o.status,
+          o.total_amount,
+          o.created_at,
+          o.updated_at,
+          COALESCE(u.username, o.customer_name) AS customer_name,
+          COALESCE(u.email, o.customer_email) AS customer_email,
+          COUNT(oi.id) AS item_count
+        FROM orders o
+        LEFT JOIN users u ON o.user_id = u.id
+        LEFT JOIN order_items oi ON o.id = oi.order_id
+        WHERE o.status IN ('pending','paid','shipped','completed')
+        GROUP BY o.id, o.status, o.total_amount, o.created_at, o.updated_at, u.username, u.email, o.customer_name, o.customer_email
+        ORDER BY o.created_at DESC
+        LIMIT ?;
       `,
       [limit]
     );

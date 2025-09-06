@@ -18,9 +18,9 @@
           </div>
         </div>
         <div>
-          <p class="text-3xl font-bold"><%= type.total_stock %></p>
+          <p class="text-3xl font-bold"><%= type.current_stock %></p>
           <p class="text-zinc-500">
-            dari <%= type.product_count %> produk tersedia
+            dari <%= type.last_month_stock %> bulan terakhir
           </p>
         </div>
       </div>
@@ -51,12 +51,12 @@
         <% if (latestOrders && latestOrders.length) { %> <%
         latestOrders.forEach(order => { %>
         <tr>
-          <td><%= order.id %></td>
+          <td><%= order.order_id %></td>
           <td>
-            <%= order.username.charAt(0).toUpperCase() + order.username.slice(1)
-            %>
+            <%= order.customer_name.charAt(0).toUpperCase() +
+            order.customer_name.slice(1) %>
           </td>
-          <td><%= order.email %></td>
+          <td><%= order.customer_email %></td>
           <td><%= order.status %></td>
           <td><%= order.item_count %></td>
           <td><%= formatRupiah(order.total_amount) %></td>
