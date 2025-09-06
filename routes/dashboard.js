@@ -25,4 +25,6 @@ router.route("/users").get(wrapAsync(dashboardController.users));
 
 router.route("/orders").get(wrapAsync(dashboardController.orders));
 
+router.route("/settings").get(wrapAsync(dashboardController.settings));
+
 module.exports = router;

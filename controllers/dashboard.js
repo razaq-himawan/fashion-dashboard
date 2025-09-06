@@ -158,6 +158,10 @@ async function orders(req, res) {
   });
 }
 
+async function settings(req, res) {
+  res.render("dashboard/settings");
+}
+
 module.exports = {
   overview,
   products,
@@ -167,4 +171,5 @@ module.exports = {
   sizes,
   users,
   orders,
+  settings,
 };
