@@ -18,13 +18,20 @@ const Order = {
       LEFT JOIN order_items oi ON o.id = oi.order_id
     `;
     const params = [];
+    let paramIndex = 1;
 
     if (q) {
-      baseQuery += ` WHERE COALESCE(u.username, o.customer_name) LIKE ? OR COALESCE(u.email, o.customer_email) LIKE ?`;
+      baseQuery += ` WHERE COALESCE(u.username, o.customer_name) ILIKE $${paramIndex} OR COALESCE(u.email, o.customer_email) ILIKE $${
+        paramIndex + 1
+      }`;
       params.push(`%${q}%`, `%${q}%`);
+      paramIndex += 2;
     }
 
-    baseQuery += ` GROUP BY o.id, o.status, o.total_amount, o.created_at, o.updated_at, u.username, u.email, o.customer_name, o.customer_email`;
+    baseQuery += `
+      GROUP BY o.id, o.status, o.total_amount, o.created_at, o.updated_at, 
+               u.username, u.email, o.customer_name, o.customer_email
+    `;
 
     const allowedSorts = {
       id_asc: "o.id ASC",
@@ -41,7 +48,7 @@ const Order = {
   },
 
   async findById(id) {
-    const [orderRows] = await pool.query(
+    const result = await pool.query(
       `
       SELECT 
         o.*,
@@ -49,15 +56,16 @@ const Order = {
         COALESCE(u.email, o.customer_email) AS customer_email
       FROM orders o
       LEFT JOIN users u ON o.user_id = u.id
-      WHERE o.id = ? LIMIT 1
+      WHERE o.id = $1
+      LIMIT 1
       `,
       [id]
     );
 
-    if (orderRows.length === 0) return null;
-    const order = orderRows[0];
+    if (result.rows.length === 0) return null;
+    const order = result.rows[0];
 
-    const [itemRows] = await pool.query(
+    const itemsResult = await pool.query(
       `
       SELECT 
         oi.*,
@@ -65,17 +73,17 @@ const Order = {
         p.product_code
       FROM order_items oi
       JOIN products p ON oi.product_id = p.id
-      WHERE oi.order_id = ?
+      WHERE oi.order_id = $1
       `,
       [id]
     );
 
-    order.items = itemRows;
+    order.items = itemsResult.rows;
     return order;
   },
 
   async latestOrders(limit = 5) {
-    const [rows] = await pool.query(
+    const result = await pool.query(
       `
         SELECT 
           o.id AS order_id,
@@ -90,13 +98,14 @@ const Order = {
         LEFT JOIN users u ON o.user_id = u.id
         LEFT JOIN order_items oi ON o.id = oi.order_id
         WHERE o.status IN ('pending','paid','shipped','completed')
-        GROUP BY o.id, o.status, o.total_amount, o.created_at, o.updated_at, u.username, u.email, o.customer_name, o.customer_email
+        GROUP BY o.id, o.status, o.total_amount, o.created_at, o.updated_at, 
+                 u.username, u.email, o.customer_name, o.customer_email
         ORDER BY o.created_at DESC
-        LIMIT ?;
+        LIMIT $1;
       `,
       [limit]
     );
-    return rows;
+    return result.rows;
   },
 };
 

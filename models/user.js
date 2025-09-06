@@ -18,10 +18,14 @@ const User = {
     `;
 
     const params = [];
+    let paramIndex = 1;
 
     if (q) {
-      baseQuery += ` WHERE u.username LIKE ? OR u.email LIKE ?`;
+      baseQuery += ` WHERE u.username ILIKE $${paramIndex} OR u.email ILIKE $${
+        paramIndex + 1
+      }`;
       params.push(`%${q}%`, `%${q}%`);
+      paramIndex += 2;
     }
 
     baseQuery += ` GROUP BY u.id`;
@@ -39,19 +43,19 @@ const User = {
   },
 
   async findByUsername(username) {
-    const [rows] = await pool.query(
-      `SELECT * FROM users WHERE username = ? LIMIT 1`,
+    const result = await pool.query(
+      `SELECT * FROM users WHERE username = $1 LIMIT 1`,
       [username]
     );
-    return rows[0];
+    return result.rows[0];
   },
 
   async findById(id) {
-    const [rows] = await pool.query(
-      `SELECT * FROM users WHERE id = ? LIMIT 1`,
+    const result = await pool.query(
+      `SELECT * FROM users WHERE id = $1 LIMIT 1`,
       [id]
     );
-    return rows[0];
+    return result.rows[0];
   },
 
   async validatePassword(password, user) {

@@ -3,81 +3,81 @@ const pool = require("../database/db");
 const Analytics = {
   // ---- PRODUCT ANALYTICS ----
   async productTypeAnalytics() {
-    const [rows] = await pool.query(`SELECT * FROM view_product_stock_summary`);
-    return rows;
+    const result = await pool.query(`SELECT * FROM view_product_stock_summary`);
+    return result.rows;
   },
 
   async topSellingProducts(limit = 10) {
-    const [rows] = await pool.query(
-      `SELECT * FROM view_top_selling_products LIMIT ?`,
+    const result = await pool.query(
+      `SELECT * FROM view_top_selling_products LIMIT $1`,
       [limit]
     );
-    return rows;
+    return result.rows;
   },
 
   async revenueByType() {
-    const [rows] = await pool.query(`SELECT * FROM view_revenue_by_type`);
-    return rows;
+    const result = await pool.query(`SELECT * FROM view_revenue_by_type`);
+    return result.rows;
   },
 
   async stockUsage() {
-    const [rows] = await pool.query(`SELECT * FROM view_stock_usage`);
-    return rows;
+    const result = await pool.query(`SELECT * FROM view_stock_usage`);
+    return result.rows;
   },
 
   // ---- SALES ANALYTICS ----
   async salesPerMonth() {
-    const [rows] = await pool.query(`SELECT * FROM view_sales_per_month`);
-    return rows;
+    const result = await pool.query(`SELECT * FROM view_sales_per_month`);
+    return result.rows;
   },
 
   async dailySalesCurrentMonth() {
-    const [rows] = await pool.query(
+    const result = await pool.query(
       `SELECT * FROM view_sales_daily_current_month`
     );
-    return rows;
+    return result.rows;
   },
 
   async monthlyGrowth() {
-    const [rows] = await pool.query(`SELECT * FROM view_monthly_growth`);
-    return rows;
+    const result = await pool.query(`SELECT * FROM view_monthly_growth`);
+    return result.rows;
   },
 
   async revenueByCategory() {
-    const [rows] = await pool.query(`SELECT * FROM view_revenue_by_category`);
-    return rows;
+    const result = await pool.query(`SELECT * FROM view_revenue_by_category`);
+    return result.rows;
   },
 
   async revenueByBrand() {
-    const [rows] = await pool.query(`SELECT * FROM view_revenue_by_brand`);
-    return rows;
+    const result = await pool.query(`SELECT * FROM view_revenue_by_brand`);
+    return result.rows;
   },
 
   // ---- USER ANALYTICS ----
   async userStats() {
-    const [rows] = await pool.query(`SELECT * FROM view_user_stats`);
-    return rows;
+    const result = await pool.query(`SELECT * FROM view_user_stats`);
+    return result.rows;
   },
 
   async userStatsById(userId) {
-    const [rows] = await pool.query(
-      `SELECT * FROM view_user_stats WHERE user_id = ? LIMIT 1`,
+    const result = await pool.query(
+      `SELECT * FROM view_user_stats WHERE user_id = $1 LIMIT 1`,
       [userId]
     );
-    return rows[0];
+    return result.rows[0];
   },
 
   async topCustomers(limit = 5) {
-    const [rows] = await pool.query(
-      `SELECT * FROM view_top_customers LIMIT ?`,
+    const result = await pool.query(
+      `SELECT * FROM view_top_customers LIMIT $1`,
       [limit]
     );
-    return rows;
+    return result.rows;
   },
 
   async inactiveUsers() {
-    const [rows] = await pool.query(`SELECT * FROM view_inactive_users`);
-    return rows;
+    const result = await pool.query(`SELECT * FROM view_inactive_users`);
+    return result.rows;
   },
 };
 

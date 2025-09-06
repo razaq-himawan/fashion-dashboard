@@ -1,26 +1,27 @@
 require("dotenv").config();
-const mysql = require("mysql2/promise");
+const { Pool } = require("pg");
+
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+});
 
 async function createViews() {
-  const connection = await mysql.createConnection({
-    host: process.env.DB_HOST,
-    user: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
-    database: process.env.DB_NAME,
-  });
-
-  console.log("Connected to database. Creating views...");
+  const client = await pool.connect();
+  console.log("Connected to PostgreSQL. Creating views...");
 
   try {
+    // Drop old view if it exists (to avoid conflicts)
+    await client.query(`DROP MATERIALIZED VIEW IF EXISTS view_latest_order;`);
+
     // ---- PRODUCTS ----
-    await connection.query(`
+    await client.query(`
       CREATE OR REPLACE VIEW view_product_stock_summary AS
       SELECT 
         pt.id AS product_type_id,
         pt.name AS type_name,
         COALESCE(SUM(p.stock), 0) AS current_stock,
         (COALESCE(SUM(p.stock), 0) + COALESCE(SUM(CASE 
-            WHEN o.created_at >= DATE_SUB(CURDATE(), INTERVAL 1 MONTH) 
+            WHEN o.created_at >= (CURRENT_DATE - INTERVAL '1 month') 
               AND o.status IN ('paid','shipped','completed')
             THEN oi.quantity ELSE 0 END), 0)
         ) AS last_month_stock
@@ -31,7 +32,7 @@ async function createViews() {
       GROUP BY pt.id, pt.name;
     `);
 
-    await connection.query(`
+    await client.query(`
       CREATE OR REPLACE VIEW view_top_selling_products AS
       SELECT 
         p.id, p.name, p.product_code,
@@ -45,7 +46,7 @@ async function createViews() {
       ORDER BY total_sold DESC;
     `);
 
-    await connection.query(`
+    await client.query(`
       CREATE OR REPLACE VIEW view_revenue_by_type AS
       SELECT 
         pt.name AS product_type,
@@ -60,7 +61,7 @@ async function createViews() {
       ORDER BY total_revenue DESC;
     `);
 
-    await connection.query(`
+    await client.query(`
       CREATE OR REPLACE VIEW view_stock_usage AS
       SELECT 
         p.id, p.name, p.product_code, p.stock,
@@ -69,12 +70,12 @@ async function createViews() {
       FROM products p
       LEFT JOIN order_items oi ON p.id = oi.product_id
       LEFT JOIN orders o ON oi.order_id = o.id
-      AND o.status IN ('paid','shipped','completed')
+        AND o.status IN ('paid','shipped','completed')
       GROUP BY p.id, p.name, p.product_code, p.stock
       ORDER BY sold_quantity DESC;
     `);
 
-    await connection.query(`
+    await client.query(`
       CREATE OR REPLACE VIEW view_revenue_by_category AS
       SELECT 
         c.name AS category,
@@ -89,7 +90,7 @@ async function createViews() {
       ORDER BY total_revenue DESC;
     `);
 
-    await connection.query(`
+    await client.query(`
       CREATE OR REPLACE VIEW view_revenue_by_brand AS
       SELECT 
         b.name AS brand,
@@ -105,19 +106,19 @@ async function createViews() {
     `);
 
     // ---- SALES ----
-    await connection.query(`
+    await client.query(`
       CREATE OR REPLACE VIEW view_sales_per_month AS
       SELECT 
-        DATE_FORMAT(o.created_at, '%Y-%m') AS month,
+        TO_CHAR(o.created_at, 'YYYY-MM') AS month,
         COUNT(o.id) AS total_orders,
         SUM(o.total_amount) AS total_revenue
       FROM orders o
       WHERE o.status IN ('paid','shipped','completed')
-      GROUP BY DATE_FORMAT(o.created_at, '%Y-%m')
+      GROUP BY TO_CHAR(o.created_at, 'YYYY-MM')
       ORDER BY month DESC;
     `);
 
-    await connection.query(`
+    await client.query(`
       CREATE OR REPLACE VIEW view_sales_daily_current_month AS
       SELECT 
         DATE(o.created_at) AS day,
@@ -125,39 +126,39 @@ async function createViews() {
         SUM(o.total_amount) AS total_revenue
       FROM orders o
       WHERE o.status IN ('paid','shipped','completed')
-        AND YEAR(o.created_at) = YEAR(CURDATE())
-        AND MONTH(o.created_at) = MONTH(CURDATE())
+        AND EXTRACT(YEAR FROM o.created_at) = EXTRACT(YEAR FROM CURRENT_DATE)
+        AND EXTRACT(MONTH FROM o.created_at) = EXTRACT(MONTH FROM CURRENT_DATE)
       GROUP BY DATE(o.created_at)
       ORDER BY day ASC;
     `);
 
-    await connection.query(`
+    await client.query(`
       CREATE OR REPLACE VIEW view_monthly_growth AS
       SELECT 
-        DATE_FORMAT(o.created_at, '%Y-%m') AS month,
+        TO_CHAR(o.created_at, 'YYYY-MM') AS month,
         SUM(o.total_amount) AS total_revenue,
         COUNT(o.id) AS total_orders,
-        LAG(SUM(o.total_amount)) OVER (ORDER BY DATE_FORMAT(o.created_at, '%Y-%m')) AS last_month_revenue,
-        LAG(COUNT(o.id)) OVER (ORDER BY DATE_FORMAT(o.created_at, '%Y-%m')) AS last_month_orders,
+        LAG(SUM(o.total_amount)) OVER (ORDER BY TO_CHAR(o.created_at, 'YYYY-MM')) AS last_month_revenue,
+        LAG(COUNT(o.id)) OVER (ORDER BY TO_CHAR(o.created_at, 'YYYY-MM')) AS last_month_orders,
         ROUND(
-          (SUM(o.total_amount) - LAG(SUM(o.total_amount)) OVER (ORDER BY DATE_FORMAT(o.created_at, '%Y-%m')))
-          / NULLIF(LAG(SUM(o.total_amount)) OVER (ORDER BY DATE_FORMAT(o.created_at, '%Y-%m')), 0) * 100,
+          (SUM(o.total_amount) - LAG(SUM(o.total_amount)) OVER (ORDER BY TO_CHAR(o.created_at, 'YYYY-MM')))
+          / NULLIF(LAG(SUM(o.total_amount)) OVER (ORDER BY TO_CHAR(o.created_at, 'YYYY-MM')), 0) * 100,
           2
         ) AS revenue_growth_percent,
         ROUND(
-          (COUNT(o.id) - LAG(COUNT(o.id)) OVER (ORDER BY DATE_FORMAT(o.created_at, '%Y-%m')))
-          / NULLIF(LAG(COUNT(o.id)) OVER (ORDER BY DATE_FORMAT(o.created_at, '%Y-%m')), 0) * 100,
+          (COUNT(o.id) - LAG(COUNT(o.id)) OVER (ORDER BY TO_CHAR(o.created_at, 'YYYY-MM')))
+          / NULLIF(LAG(COUNT(o.id)) OVER (ORDER BY TO_CHAR(o.created_at, 'YYYY-MM')), 0) * 100,
           2
         ) AS order_growth_percent
       FROM orders o
       WHERE o.status IN ('paid','shipped','completed')
-      GROUP BY DATE_FORMAT(o.created_at, '%Y-%m')
+      GROUP BY TO_CHAR(o.created_at, 'YYYY-MM')
       ORDER BY month DESC;
     `);
 
     // ---- USERS ----
-    await connection.query(`
-      CREATE OR REPLACE VIEW view_latest_order AS
+    await client.query(`
+      CREATE MATERIALIZED VIEW view_latest_order AS
       SELECT 
         o.id AS order_id,
         o.user_id,
@@ -172,10 +173,10 @@ async function createViews() {
       WHERE o.status IN ('pending','paid','shipped','completed')
       GROUP BY o.id, o.user_id, u.username, o.status, o.total_amount, o.created_at
       ORDER BY o.created_at DESC
-      LIMIT 1;
+      LIMIT 5;
     `);
 
-    await connection.query(`
+    await client.query(`
       CREATE OR REPLACE VIEW view_user_stats AS
       SELECT 
         u.id AS user_id,
@@ -192,7 +193,7 @@ async function createViews() {
       ORDER BY total_spent DESC;
     `);
 
-    await connection.query(`
+    await client.query(`
       CREATE OR REPLACE VIEW view_top_customers AS
       SELECT 
         u.id AS user_id,
@@ -208,7 +209,7 @@ async function createViews() {
       ORDER BY total_spent DESC;
     `);
 
-    await connection.query(`
+    await client.query(`
       CREATE OR REPLACE VIEW view_inactive_users AS
       SELECT 
         u.id AS user_id,
@@ -222,11 +223,13 @@ async function createViews() {
       ORDER BY u.created_at ASC;
     `);
 
-    console.log("✅ All analytics views created successfully.");
+    console.log(
+      "✅ All analytics views created successfully (with materialized latest orders)."
+    );
   } catch (err) {
     console.error("❌ Error creating views:", err);
   } finally {
-    await connection.end();
+    client.release();
   }
 }
 

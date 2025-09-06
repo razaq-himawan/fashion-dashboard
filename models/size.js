@@ -4,12 +4,13 @@ const paginate = require("../lib/helpers/paginate");
 const Size = {
   async findAll({ q, sort, page, perPage } = {}) {
     let baseQuery = `SELECT * FROM sizes`;
-
     const params = [];
+    let paramIndex = 1;
 
     if (q) {
-      baseQuery += ` WHERE name LIKE ?`;
-      params.push(`%${q}%`, `%${q}%`);
+      baseQuery += ` WHERE name ILIKE $${paramIndex}`;
+      params.push(`%${q}%`);
+      paramIndex++;
     }
 
     const allowedSorts = {
@@ -24,11 +25,11 @@ const Size = {
   },
 
   async findById(id) {
-    const [rows] = await pool.query(
-      `SELECT * FROM sizes WHERE id = ? LIMIT 1`,
+    const result = await pool.query(
+      `SELECT * FROM sizes WHERE id = $1 LIMIT 1`,
       [id]
     );
-    return rows[0];
+    return result.rows[0];
   },
 };
 

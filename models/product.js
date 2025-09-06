@@ -4,29 +4,33 @@ const paginate = require("../lib/helpers/paginate");
 const Product = {
   async findAll({ q, sort, page, perPage } = {}) {
     let baseQuery = `
-    SELECT p.id,
-           p.product_code,
-           p.name,
-           p.price,
-           p.stock,
-           pt.name AS product_type,
-           b.name AS brand,
-           c.name AS category,
-           co.name AS color,
-           s.name AS size
-    FROM products p
-    LEFT JOIN product_types pt ON p.product_type_id = pt.id
-    LEFT JOIN brands b ON p.brand_id = b.id
-    LEFT JOIN categories c ON p.category_id = c.id
-    LEFT JOIN colors co ON p.color_id = co.id
-    LEFT JOIN sizes s ON p.size_id = s.id
-  `;
+      SELECT p.id,
+             p.product_code,
+             p.name,
+             p.price,
+             p.stock,
+             pt.name AS product_type,
+             b.name AS brand,
+             c.name AS category,
+             co.name AS color,
+             s.name AS size
+      FROM products p
+      LEFT JOIN product_types pt ON p.product_type_id = pt.id
+      LEFT JOIN brands b ON p.brand_id = b.id
+      LEFT JOIN categories c ON p.category_id = c.id
+      LEFT JOIN colors co ON p.color_id = co.id
+      LEFT JOIN sizes s ON p.size_id = s.id
+    `;
 
     const params = [];
+    let paramIndex = 1;
 
     if (q) {
-      baseQuery += ` WHERE p.name LIKE ? OR p.product_code LIKE ?`;
+      baseQuery += ` WHERE p.name ILIKE $${paramIndex} OR p.product_code ILIKE $${
+        paramIndex + 1
+      }`;
       params.push(`%${q}%`, `%${q}%`);
+      paramIndex += 2;
     }
 
     const allowedSorts = {
@@ -43,79 +47,82 @@ const Product = {
   },
 
   async findById(id) {
-    const [rows] = await pool.query(
-      `SELECT p.*, 
-              pt.name AS product_type,
-              b.name AS brand,
-              c.name AS category,
-              co.name AS color,
-              s.name AS size
-       FROM products p
-       LEFT JOIN product_types pt ON p.product_type_id = pt.id
-       LEFT JOIN brands b ON p.brand_id = b.id
-       LEFT JOIN categories c ON p.category_id = c.id
-       LEFT JOIN colors co ON p.color_id = co.id
-       LEFT JOIN sizes s ON p.size_id = s.id
-       WHERE p.id = ? LIMIT 1`,
+    const result = await pool.query(
+      `
+      SELECT p.*, 
+             pt.name AS product_type,
+             b.name AS brand,
+             c.name AS category,
+             co.name AS color,
+             s.name AS size
+      FROM products p
+      LEFT JOIN product_types pt ON p.product_type_id = pt.id
+      LEFT JOIN brands b ON p.brand_id = b.id
+      LEFT JOIN categories c ON p.category_id = c.id
+      LEFT JOIN colors co ON p.color_id = co.id
+      LEFT JOIN sizes s ON p.size_id = s.id
+      WHERE p.id = $1
+      LIMIT 1
+      `,
       [id]
     );
-    return rows[0];
+    return result.rows[0];
   },
 
   async findByCode(product_code) {
-    const [rows] = await pool.query(
-      `SELECT * FROM products WHERE product_code = ? LIMIT 1`,
+    const result = await pool.query(
+      `SELECT * FROM products WHERE product_code = $1 LIMIT 1`,
       [product_code]
     );
-    return rows[0];
+    return result.rows[0];
   },
 
   async findByName(name) {
-    const [rows] = await pool.query(
-      `SELECT * FROM products WHERE name LIKE ?`,
+    const result = await pool.query(
+      `SELECT * FROM products WHERE name ILIKE $1`,
       [`%${name}%`]
     );
-    return rows;
+    return result.rows;
   },
 
   async findByType(typeId) {
-    const [rows] = await pool.query(
-      `SELECT * FROM products WHERE product_type_id = ?`,
+    const result = await pool.query(
+      `SELECT * FROM products WHERE product_type_id = $1`,
       [typeId]
     );
-    return rows;
+    return result.rows;
   },
 
   async findByBrand(brandId) {
-    const [rows] = await pool.query(
-      `SELECT * FROM products WHERE brand_id = ?`,
+    const result = await pool.query(
+      `SELECT * FROM products WHERE brand_id = $1`,
       [brandId]
     );
-    return rows;
+    return result.rows;
   },
 
   async findByCategory(categoryId) {
-    const [rows] = await pool.query(
-      `SELECT * FROM products WHERE category_id = ?`,
+    const result = await pool.query(
+      `SELECT * FROM products WHERE category_id = $1`,
       [categoryId]
     );
-    return rows;
+    return result.rows;
   },
 
   async findByColor(colorId) {
-    const [rows] = await pool.query(
-      `SELECT * FROM products WHERE color_id = ?`,
+    const result = await pool.query(
+      `SELECT * FROM products WHERE color_id = $1`,
       [colorId]
     );
-    return rows;
+    return result.rows;
   },
 
   async findBySize(sizeId) {
-    const [rows] = await pool.query(
-      `SELECT * FROM products WHERE size_id = ?`,
+    const result = await pool.query(
+      `SELECT * FROM products WHERE size_id = $1`,
       [sizeId]
     );
-    return rows;
+    return result.rows;
   },
 
   async sort(column = "name", order = "ASC") {
@@ -127,21 +134,23 @@ const Product = {
       ? order.toUpperCase()
       : "ASC";
 
-    const [rows] = await pool.query(
+    const result = await pool.query(
       `SELECT * FROM products ORDER BY ${sortColumn} ${sortOrder}`
     );
-    return rows;
+    return result.rows;
   },
 
   async lowStock(threshold = 5) {
-    const [rows] = await pool.query(
-      `SELECT id, product_code, name, stock, price
-       FROM products
-       WHERE stock <= ?
-       ORDER BY stock ASC`,
+    const result = await pool.query(
+      `
+      SELECT id, product_code, name, stock, price
+      FROM products
+      WHERE stock <= $1
+      ORDER BY stock ASC
+      `,
       [threshold]
     );
-    return rows;
+    return result.rows;
   },
 };
 
